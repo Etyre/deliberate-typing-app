@@ -66,3 +66,28 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+
+.textAndTypingContainer {
+  height: fit-content;
+  width: 500px;
+  padding: 30px;
+}
+
+.textToTypeBox {
+  height: 100px;
+  width: 100%;
+}
+
+/* This is for my components/Typingbox.jsx file */
+.typingBox {
+  height: 100px;
+  width: 100%;
+}
+
+.typingBox textarea {
+  height: 100%;
+  width: 100%;
+}
+  
+

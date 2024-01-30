@@ -10,8 +10,8 @@ function handleText(event) {
 }
 
 return(
-    <div>
-        <input type="text" onChange={handleText} />
+    <div className="typingBox">
+        <textarea onChange={handleText} />
     </div>
 )
 }
