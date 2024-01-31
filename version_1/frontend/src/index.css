@@ -87,12 +87,17 @@ button:focus-visible {
 
 }
 
-.typingBox textarea {
+.typingBox .editableSection {
   resize: vertical;
   overflow: hidden;
   height: 100%;
   min-height: 200px;
   width: 100%;
+  border: 1px solid white;
+}
+
+.typingBox .redTextArea {
+  color: red;
 }
   
 
