@@ -9,7 +9,10 @@ const [text, setText] = useState("")
 const [isValid, setIsValid] = useState(true)
 
 useEffect(()=> {
-    if(text == textToType){
+    console.log("textToType is: ",textToType)
+    console.log("text is: ",text)
+
+    if(textToType.startsWith(text)){
         setIsValid(true)
     }else{
         setIsValid(false)
