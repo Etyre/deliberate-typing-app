@@ -42,7 +42,19 @@ function ContentEditableWithRef(props) {
   const defaultValue = useRef(props.value);
 
   const handleInput = (event) => {
+    let selection = window.getSelection();
+    let range = selection.getRangeAt(0);
+    console.log("Range start and end: ", range.startOffset, range.endOffset);
+    const startOffsetCopy = range.startOffset;
+    const endOffsetCopy = range.endOffset;
+
     props.onChange(handleText(event.target.textContent));
+
+    let newRange = range.cloneRange;
+    newRange.startOffset = startOffsetCopy;
+    newRange.endOffset = endOffsetCopy;
+    selection.removeAllRanges();
+    selection.addRange(newRange);
   };
 
   return (
@@ -62,6 +74,8 @@ export default function Textbox({ textToType }) {
 
   const [text, setText] = useState("");
   const [isValid, setIsValid] = useState(true);
+
+  const [mistypedTokens, setMistypeTokens] = useState([]);
 
   useEffect(() => {
     console.log("textToType is: ", textToType);
