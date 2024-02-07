@@ -1,8 +1,10 @@
 import { useEffect, useState, useRef } from "react";
 
 function typedTextParser(text) {
-  arrayOfWords = text.split(" ");
-  arrayOfWordsWithSpaces = [];
+  let arrayOfWords = text.split(" ");
+  // let arrayOfWords = text.split("");
+  // Note: There are two ways, in principle, that we might want this to work. Either individual words are flagged as mistyped, but only after you "submit" them by hitting space. Or individual characters are flagged as wrong as soon as you type them. To do the second thing, I would need to build a bit of extra machinery, so that we're still able to log which whole words were mistyped, not just which characters. But this could be a setting, maybe.
+  let arrayOfWordsWithSpaces = [];
   for (let index = 0; index < arrayOfWords.length; index++) {
     // We're adding a space to the end of each element, except for the last one.
     let element;
@@ -16,11 +18,31 @@ function typedTextParser(text) {
   return arrayOfWordsWithSpaces;
 }
 
+function compareTexts(targetText, text) {
+  const parsedTargetText = typedTextParser(targetText);
+  const parsedText = typedTextParser(text);
+
+  for (let index = 0; index < parsedText.length; index++) {
+    const element = parsedText[index];
+
+    if (parsedTargetText[index].startsWith(element)) {
+      console.log("The typed text matches the target text!");
+    } else {
+      console.log("Uh oh. The typed text differs from the target text.");
+    }
+  }
+}
+
+function handleText(text) {
+  return text.replaceAll(String.fromCharCode(160), " ");
+  // We're doing the replaceAll because the contentEditable div by default uses a different type of space from the standard text space (for trailing spaces only), and we need it to match textToType.
+}
+
 function ContentEditableWithRef(props) {
   const defaultValue = useRef(props.value);
 
   const handleInput = (event) => {
-    props.onChange(event.target.innerHTML);
+    props.onChange(handleText(event.target.textContent));
   };
 
   return (
@@ -54,10 +76,9 @@ export default function Textbox({ textToType }) {
     }
   }, [text]);
 
-  function handleText(event) {
-    setText(event.target.textContent.replaceAll(String.fromCharCode(160), " "));
-    // We're doing the replaceAll because the contentEditable div by default uses a different type of space from the standard text space (for trailing spaces only), and we need it to match textToType.
-  }
+  useEffect(() => {
+    compareTexts(textToType, text);
+  }, [textToType, text]);
 
   return (
     <div className="typingBox">
