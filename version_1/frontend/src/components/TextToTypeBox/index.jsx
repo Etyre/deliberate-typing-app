@@ -1,13 +1,11 @@
+export default function TextToTypeBox({ textToType }) {
+  function handleText(event) {
+    setTextToType(event.target.value);
+  }
 
-export default function TextToTypeBox ({textToType}) {
-
-function handleText(event) {
-    setTextToType(event.target.value)
-}
-
-return(
+  return (
     <div className="textToTypeBox">
-        <p>{textToType}</p>
+      <p>{textToType}</p>
     </div>
-)
+  );
 }
