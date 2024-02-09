@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import ContentEditable from "../ContentEditable";
 
 function typedTextParser(text) {
   let arrayOfWords = text.split(" ");
@@ -33,41 +34,6 @@ function compareTexts(targetText, text) {
   }
 }
 
-function handleText(text) {
-  return text.replaceAll(String.fromCharCode(160), " ");
-  // We're doing the replaceAll because the contentEditable div by default uses a different type of space from the standard text space (for trailing spaces only), and we need it to match textToType.
-}
-
-function ContentEditableWithRef(props) {
-  const defaultValue = useRef(props.value);
-
-  const handleInput = (event) => {
-    let selection = window.getSelection();
-    let range = selection.getRangeAt(0);
-    console.log("Range start and end: ", range.startOffset, range.endOffset);
-    const startOffsetCopy = range.startOffset;
-    const endOffsetCopy = range.endOffset;
-
-    props.onChange(handleText(event.target.textContent));
-
-    let newRange = range.cloneRange;
-    newRange.startOffset = startOffsetCopy;
-    newRange.endOffset = endOffsetCopy;
-    selection.removeAllRanges();
-    selection.addRange(newRange);
-  };
-
-  return (
-    <div
-      className="editableSection"
-      contentEditable="true"
-      onInput={handleInput}
-      dangerouslySetInnerHTML={{ __html: defaultValue.current }}
-      //This line right here is just for the initial value, in case I want to pass in something other than the empty string.
-    />
-  );
-}
-
 export default function Textbox({ textToType }) {
   // An alternative way to write this line:
   // export default function Textbox (props)
@@ -94,9 +60,15 @@ export default function Textbox({ textToType }) {
     compareTexts(textToType, text);
   }, [textToType, text]);
 
+  useEffect(() => {
+    if (text == "one two three") {
+      setText("one <span>two</span> three");
+    }
+  }, [text]);
+
   return (
     <div className="typingBox">
-      <ContentEditableWithRef
+      <ContentEditable
         value={text}
         onChange={(newValue) => {
           setText(newValue);
