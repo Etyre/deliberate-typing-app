@@ -5,8 +5,25 @@ function normalizeSpaces(text) {
   // We're doing the replaceAll because the contentEditable div by default uses a different type of space from the standard text space (for trailing spaces only), and we need it to match textToType.
 }
 
+function getPositionInChildren(parentDiv, postionInParent) {
+  let charactersLeft = postionInParent;
+
+  for (let index = 0; index < parentDiv.childNodes.length; index++) {
+    const currentNode = parentDiv.childNodes[index];
+    if (charactersLeft <= currentNode.textContent.length) {
+      return { node: currentNode, positionInNode: charactersLeft };
+    }
+
+    charactersLeft = charactersLeft - currentNode.textContent.length;
+
+    // We expect that this won't work if any of the nodes have children themselves.
+  }
+}
+
 export default function ContentEditable(props) {
   const theDivRef = useRef();
+
+  console.log("props.value: ", `"${props.value}"`);
 
   const [startOffsetCopy, setStartOffsetCopy] = useState();
   const [endOffsetCopy, setEndOffsetCopy] = useState();
@@ -20,8 +37,10 @@ export default function ContentEditable(props) {
 
     // console.log("Range start and end: ", startOffsetCopy, endOffsetCopy);
 
-    props.onChange(normalizeSpaces(event.target.textContent));
-    // Future Eli: It's important that all three of setStartOffsetCopy, setEndOffsetCopy, and props.onChange happen in the same rerender, or things might break. If this code isn't working, check that.
+    // props.onChange(normalizeSpaces(event.target.textContent));
+    props.onChange(event.target.textContent);
+
+    // Future Eli: It's maybe important that all three of setStartOffsetCopy, setEndOffsetCopy, and props.onChange happen in the same rerender, or things might break. If this code isn't working, check that.
   };
 
   useEffect(() => {
@@ -36,7 +55,7 @@ export default function ContentEditable(props) {
       return;
     }
     let range = selection.getRangeAt(0);
-    console.log("Props.value: ", props.value);
+    console.log("props.value: ", `"${props.value}"`);
     console.log("Range start and end: ", startOffsetCopy, endOffsetCopy);
 
     let newRange = range.cloneRange();

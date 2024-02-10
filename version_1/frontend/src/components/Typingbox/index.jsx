@@ -27,9 +27,11 @@ function compareTexts(targetText, text) {
     const element = parsedText[index];
 
     if (parsedTargetText[index].startsWith(element)) {
-      console.log("The typed text matches the target text!");
+      console.log("The typed text matches the target text, so far!");
     } else {
-      console.log("Uh oh. The typed text differs from the target text.");
+      console.log(
+        "Uh oh. The some of typed text differs from the target text."
+      );
     }
   }
 }
