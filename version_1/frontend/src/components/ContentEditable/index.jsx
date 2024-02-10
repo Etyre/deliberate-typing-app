@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 
 function normalizeSpaces(text) {
   return text.replaceAll(String.fromCharCode(160), " ");
@@ -8,17 +8,20 @@ function normalizeSpaces(text) {
 export default function ContentEditable(props) {
   const theDivRef = useRef();
 
-  let startOffsetCopy;
-  let endOffsetCopy;
+  const [startOffsetCopy, setStartOffsetCopy] = useState();
+  const [endOffsetCopy, setEndOffsetCopy] = useState();
 
   const handleInput = (event) => {
     let selection = window.getSelection();
     let range = selection.getRangeAt(0);
     // console.log("Range start and end: ", range.startOffset, range.endOffset);
-    startOffsetCopy = range.startOffset;
-    endOffsetCopy = range.endOffset;
+    setStartOffsetCopy(range.startOffset);
+    setEndOffsetCopy(range.endOffset);
+
+    // console.log("Range start and end: ", startOffsetCopy, endOffsetCopy);
 
     props.onChange(normalizeSpaces(event.target.textContent));
+    // Future Eli: It's important that all three of setStartOffsetCopy, setEndOffsetCopy, and props.onChange happen in the same rerender, or things might break. If this code isn't working, check that.
   };
 
   useEffect(() => {
@@ -33,6 +36,7 @@ export default function ContentEditable(props) {
       return;
     }
     let range = selection.getRangeAt(0);
+    console.log("Props.value: ", props.value);
     console.log("Range start and end: ", startOffsetCopy, endOffsetCopy);
 
     let newRange = range.cloneRange();
