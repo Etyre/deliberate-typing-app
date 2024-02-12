@@ -40,7 +40,9 @@ export default function Textbox({ textToType }) {
   // An alternative way to write this line:
   // export default function Textbox (props)
 
-  const [text, setText] = useState("");
+  const [text, setText] = useState(
+    "one <span>two</span> three four five <span>six</span> <span>seven</span> eight"
+  );
   const [isValid, setIsValid] = useState(true);
 
   const [mistypedTokens, setMistypeTokens] = useState([]);
