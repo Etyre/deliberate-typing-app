@@ -15,19 +15,14 @@ function getPositionInChildren(parentDiv, postionInParent) {
     }
 
     charactersLeft = charactersLeft - currentNode.textContent.length;
-
     // We expect that this won't work if any of the nodes have children themselves.
   }
 }
 
-function getPostitionInParent(
-  positionRelativeToNode,
-  nodePositionIsIn,
-  parentDiv
-) {
+function getPostitionInParent(positionRelativeToNode, startingNode, parentDiv) {
   let totalPostition = positionRelativeToNode;
 
-  let currentNode = nodePositionIsIn.previousSibling;
+  let currentNode = startingNode.previousSibling;
 
   while (currentNode) {
     if (currentNode.parentNode != parentDiv) {
@@ -61,7 +56,13 @@ export default function ContentEditable(props) {
         theDivRef.current
       )
     );
-    setEndOffsetCopy(getPostitionInParent(range.endOffset, range.endContainer));
+    setEndOffsetCopy(
+      getPostitionInParent(
+        range.endOffset,
+        range.endContainer,
+        theDivRef.current
+      )
+    );
 
     // console.log("Range start and end: ", startOffsetCopy, endOffsetCopy);
 
@@ -92,6 +93,9 @@ export default function ContentEditable(props) {
     // translating from a global position in the div to the specific node and the postion in the that node.
     const { node: nodeOfStart, positionInNode: postionInNodeOfStart } =
       getPositionInChildren(theDivRef.current, startOffsetCopy);
+
+    console.log("theDivRef.current :", theDivRef.current);
+    console.log("endOffsetCopy :", endOffsetCopy);
 
     const { node: nodeOfEnd, positionInNode: postionInNodeOfEnd } =
       getPositionInChildren(theDivRef.current, endOffsetCopy);
