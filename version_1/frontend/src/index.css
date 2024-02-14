@@ -99,5 +99,9 @@ button:focus-visible {
 .typingBox .redTextArea {
   color: red;
 }
+
+.missedToken {
+  color: red;
+}
   
 
