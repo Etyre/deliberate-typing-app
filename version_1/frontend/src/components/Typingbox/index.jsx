@@ -28,8 +28,12 @@ function typedTextParser(text) {
   // This regex matches everything that's not a words, space or apostrophe.
   // this returns an iterator
 
+  // console.log("The punctuation tokens as an array: ", [...thePuncIterator]);
+
   const arrayOfRegexMatches = [...thePuncIterator, ...theWordIterator];
   // This is an array of arrays.
+
+  // Note that the punctuation marks are all at the front, instead of in order between the words. This is fine, we're putting them back in order later, but don't get confused about it.
 
   // Elements: 0th: the matched string
   // The postition of the first charcater is the the .index property of the array. (These arrays have an index property)
@@ -50,10 +54,20 @@ function compareTexts(targetText, text) {
   let tokenInfosOfMatchingWords = [];
   let tokenInfosOfMismatchingWords = [];
 
-  for (let index = 0; index < parsedText.length; index++) {
+  console.log("The parsedTargetText", parsedTargetText);
+
+  for (
+    let index = 0;
+    index < Math.max(parsedText.length, parsedTargetText.length);
+    index++
+  ) {
     const element = parsedText[index];
-    console.log("parsedTargetText[index] :", parsedTargetText[index]);
-    console.log("element. :", element);
+    console.log("parsedTargetText[index]: ", parsedTargetText[index]);
+    // console.log("element: ", element);
+
+    if (!element || !parsedTargetText[index]) {
+      break;
+    }
 
     if (parsedTargetText[index].tokenString.startsWith(element.tokenString)) {
       console.log("The typed text matches the target text, so far!");
@@ -68,11 +82,21 @@ function compareTexts(targetText, text) {
   };
 }
 
+function textContentFromHtmlString(htmlString) {
+  const parser = new DOMParser();
+  const miniDocument = parser.parseFromString(htmlString, "text/html");
+  const textContent = miniDocument.body.textContent;
+
+  return textContent;
+}
+
 export default function Textbox({ textToType }) {
   // An alternative way to write this line:
   // export default function Textbox (props)
 
-  const [text, setText] = useState("one two three four five six seven eight");
+  const [typedTextWithHtml, setTypedTextWithHtml] = useState(
+    "one two three four five six seven eight"
+  );
   // By the way, something about the way set text works ignores/removes spans in the text. In order for spans to persist from rendering to rendering, a function needs to reapply them each time.
   const [isValid, setIsValid] = useState(true);
 
@@ -80,31 +104,35 @@ export default function Textbox({ textToType }) {
 
   useEffect(() => {
     console.log("textToType is: ", textToType);
-    console.log("text is: ", `"${text}"`);
+    console.log("text is: ", `"${typedTextWithHtml}"`);
 
-    // if()
-
-    if (textToType.startsWith(text)) {
+    if (textToType.startsWith(typedTextWithHtml)) {
       setIsValid(true);
     } else {
       setIsValid(false);
     }
-  }, [text]);
+  }, [typedTextWithHtml]);
 
   useEffect(() => {
-    compareTexts(textToType, text);
-  }, [textToType, text]);
+    compareTexts(textToType, typedTextWithHtml);
+  }, [textToType, typedTextWithHtml]);
+
+  const typedTextContent = textContentFromHtmlString(typedTextWithHtml);
 
   useEffect(() => {
-    const matchesAndMismatches = compareTexts(textToType, text);
+    // Whenever we compare the text, we want to use a version of typedText that has stripped out the html, because otherwise we'll problems.
+    // But whenever we set the text, we want to use raw text, with all the html, because that's the point of doing this fuction at all.
+
+    const matchesAndMismatches = compareTexts(textToType, typedTextContent);
     // CompareTexts returns an object of two arrays of tokenInfos
-    const parsedText = typedTextParser(text);
+    const parsedText = typedTextParser(typedTextContent);
     const reconstructedText = "";
 
     if (matchesAndMismatches.mismatchingWordInstances.length == 0) {
-      setText(text);
+      setTypedTextWithHtml(typedTextWithHtml);
     } else {
-      let annotatedText = text;
+      let annotatedText = typedTextContent;
+      // this is intializing the annotatedText, which means we're starting with just the textContent.
 
       let additiveCorrectionFactor = 0;
       // There's a problem, which that every time we add a span to the text, that makes all of the startingPostitions that we're passing in inaccacurate. They're off by the number of charcaters that are added with the span.
@@ -149,19 +177,20 @@ export default function Textbox({ textToType }) {
         // console.log(additiveCorrectionFactor);
 
         annotatedText = newText;
-        additiveCorrectionFactor = annotatedText.length - text.length;
+        additiveCorrectionFactor =
+          annotatedText.length - typedTextContent.length;
       }
       console.log(annotatedText);
-      setText(annotatedText);
+      setTypedTextWithHtml(annotatedText);
     }
-  }, [text]);
+  }, [typedTextContent]);
 
   return (
     <div className="typingBox">
       <ContentEditable
-        value={text}
+        value={typedTextWithHtml}
         onChange={(newValue) => {
-          setText(newValue);
+          setTypedTextWithHtml(newValue);
         }}
       />
       {/* <textarea className={isValid==false? "redTextArea": ""} onChange={handleText} /> */}
