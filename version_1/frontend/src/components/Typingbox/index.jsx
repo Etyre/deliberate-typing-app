@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import ContentEditable from "../ContentEditable";
 
 /**
@@ -54,7 +54,7 @@ function compareTexts(targetText, text) {
   let tokenInfosOfMatchingWords = [];
   let tokenInfosOfMismatchingWords = [];
 
-  console.log("The parsedTargetText", parsedTargetText);
+  // console.log("The parsedTargetText", parsedTargetText);
 
   for (
     let index = 0;
@@ -62,7 +62,7 @@ function compareTexts(targetText, text) {
     index++
   ) {
     const element = parsedText[index];
-    console.log("parsedTargetText[index]: ", parsedTargetText[index]);
+    // console.log("parsedTargetText[index]: ", parsedTargetText[index]);
     // console.log("element: ", element);
 
     if (!element || !parsedTargetText[index]) {
@@ -97,27 +97,30 @@ export default function Textbox({ textToType }) {
   const [typedTextWithHtml, setTypedTextWithHtml] = useState(
     "one two three four five six seven eight"
   );
-  // By the way, something about the way set text works ignores/removes spans in the text. In order for spans to persist from rendering to rendering, a function needs to reapply them each time.
+  // By the way, something about the way setText works ignores/removes spans in the text. In order for spans to persist from rendering to rendering, a function needs to reapply them each time.
   const [isValid, setIsValid] = useState(true);
 
   const [mistypedTokens, setMistypedTokens] = useState([]);
 
-  useEffect(() => {
-    console.log("textToType is: ", textToType);
-    console.log("text is: ", `"${typedTextWithHtml}"`);
+  const typedTextContent = useMemo(
+    () => textContentFromHtmlString(typedTextWithHtml),
+    [typedTextWithHtml]
+  );
 
-    if (textToType.startsWith(typedTextWithHtml)) {
+  useEffect(() => {
+    // console.log("textToType is: ", textToType);
+    // console.log("text is: ", `"${typedTextWithHtml}"`);
+
+    if (textToType.startsWith(typedTextContent)) {
       setIsValid(true);
     } else {
       setIsValid(false);
     }
-  }, [typedTextWithHtml]);
+  }, [typedTextContent]);
 
   useEffect(() => {
-    compareTexts(textToType, typedTextWithHtml);
-  }, [textToType, typedTextWithHtml]);
-
-  const typedTextContent = textContentFromHtmlString(typedTextWithHtml);
+    compareTexts(textToType, typedTextContent);
+  }, [textToType, typedTextContent]);
 
   useEffect(() => {
     // Whenever we compare the text, we want to use a version of typedText that has stripped out the html, because otherwise we'll problems.
@@ -180,7 +183,7 @@ export default function Textbox({ textToType }) {
         additiveCorrectionFactor =
           annotatedText.length - typedTextContent.length;
       }
-      console.log(annotatedText);
+      // console.log(annotatedText);
       setTypedTextWithHtml(annotatedText);
     }
   }, [typedTextContent]);
