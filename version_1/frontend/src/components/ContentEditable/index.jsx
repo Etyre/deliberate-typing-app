@@ -11,9 +11,17 @@ function getPositionInChildren(parentDiv, postionInParent) {
 
   // console.log("parentDiv.childNodes: ", parentDiv.childNodes);
   for (let index = 0; index < parentDiv.childNodes.length; index++) {
+    /** @type {Node} */
     const currentNode = parentDiv.childNodes[index];
+    let nodeToReturn;
     if (charactersLeft <= currentNode.textContent.length) {
-      return { node: currentNode, positionInNode: charactersLeft };
+      // TODO (Joe): Traverse all the way down to the correct node
+      if (currentNode.nodeType != Node.TEXT_NODE) {
+        nodeToReturn = currentNode.childNodes[0];
+      } else {
+        nodeToReturn = currentNode;
+      }
+      return { node: nodeToReturn, positionInNode: charactersLeft };
     }
 
     charactersLeft = charactersLeft - currentNode.textContent.length;
@@ -21,26 +29,36 @@ function getPositionInChildren(parentDiv, postionInParent) {
   }
 }
 
-function getPostitionInParent(positionRelativeToNode, startingNode, parentDiv) {
+function getPositionInParent(positionRelativeToNode, startingNode, parentDiv) {
   let totalPostition = positionRelativeToNode;
+  console.log("totalPostition: ", totalPostition);
 
   let currentNode = startingNode;
-  console.log("startingNode: ", startingNode);
+  // console.log("startingNode: ", startingNode);
 
-  console.log("currentNode: ", currentNode);
+  // console.log("currentNode (outside of loop): ", currentNode);
   while (currentNode) {
     // This if statement only trigger if the cursor starts out inside of a span. In that case, it pops us up one level of the DOM tree, from the node inside of the span, to the span itself.
 
+    // TODO (Joe): Traverse all the way up to the correct node
     if (!currentNode.previousSibling) {
       currentNode = currentNode.parentNode.previousSibling;
     } else {
       currentNode = currentNode.previousSibling;
     }
 
-    if (currentNode == parentDiv) {
+    if (
+      !currentNode ||
+      currentNode == parentDiv ||
+      currentNode.contains(parentDiv)
+    ) {
       break;
     }
+    // console.log("currentNode (inside of loop): ", currentNode);
+
     totalPostition += currentNode.textContent.length;
+
+    // console.log("TotalPosition:", totalPostition);
 
     // if (!currentNode and currentNode.parentNode != parentDiv){
     //   currentNode = currentNode.parentNode;
@@ -65,14 +83,14 @@ export default function ContentEditable(props) {
 
     // console.log("range.startOffset: ", range.startOffset);
     setStartOffsetCopy(
-      getPostitionInParent(
+      getPositionInParent(
         range.startOffset,
         range.startContainer,
         theDivRef.current
       )
     );
     setEndOffsetCopy(
-      getPostitionInParent(
+      getPositionInParent(
         range.endOffset,
         range.endContainer,
         theDivRef.current
@@ -106,7 +124,7 @@ export default function ContentEditable(props) {
     // console.log("Range start and end: ", startOffsetCopy, endOffsetCopy);
 
     // translating from a global position in the div to the specific node and the postion in the that node.
-    console.log("startOffsetCopy: ", startOffsetCopy);
+    // console.log("startOffsetCopy: ", startOffsetCopy);
     const { node: nodeOfStart, positionInNode: postionInNodeOfStart } =
       getPositionInChildren(theDivRef.current, startOffsetCopy);
 
@@ -117,15 +135,17 @@ export default function ContentEditable(props) {
       getPositionInChildren(theDivRef.current, endOffsetCopy);
 
     let newRange = range.cloneRange();
-    newRange.setStart(nodeOfStart || theDivRef.current, postionInNodeOfStart);
-    newRange.setEnd(nodeOfEnd || theDivRef.current, postionInNodeOfEnd);
 
-    // console.log(
-    //   "Activated node: ",
-    //   nodeOfEnd || theDivRef.current,
-    //   "Position in activated Node: ",
-    //   postionInNodeOfStart
-    // );
+    console.log("Setting range start...");
+    console.log(
+      "node: ",
+      nodeOfStart || theDivRef.current,
+      "offset: ",
+      postionInNodeOfStart
+    );
+    newRange.setStart(nodeOfStart || theDivRef.current, postionInNodeOfStart);
+
+    newRange.setEnd(nodeOfEnd || theDivRef.current, postionInNodeOfEnd);
 
     selection.removeAllRanges();
     selection.addRange(newRange);
