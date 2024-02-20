@@ -94,9 +94,7 @@ export default function Textbox({ textToType }) {
   // An alternative way to write this line:
   // export default function Textbox (props)
 
-  const [typedTextWithHtml, setTypedTextWithHtml] = useState(
-    "one two three four five six seven eight"
-  );
+  const [typedTextWithHtml, setTypedTextWithHtml] = useState("");
   // By the way, something about the way setText works ignores/removes spans in the text. In order for spans to persist from rendering to rendering, a function needs to reapply them each time.
   const [isValid, setIsValid] = useState(true);
 

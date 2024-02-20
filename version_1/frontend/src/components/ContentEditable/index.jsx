@@ -9,6 +9,9 @@ function getPositionInChildren(parentDiv, postionInParent) {
   let charactersLeft = postionInParent;
   // console.log("postionInParent: ", postionInParent);
 
+  if (parentDiv.childNodes.length == 0) {
+    return { node: parentDiv, positionInNode: 0 };
+  }
   // console.log("parentDiv.childNodes: ", parentDiv.childNodes);
   for (let index = 0; index < parentDiv.childNodes.length; index++) {
     /** @type {Node} */
