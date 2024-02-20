@@ -32,23 +32,18 @@ function getPositionInChildren(parentDiv, postionInParent) {
   }
 }
 
-function getPositionInParent(positionRelativeToNode, startingNode, parentDiv) {
+// This function here 👇 computes the abolute position of the cursor (or the beginings and endings of a range), in the contentEditable section of the div.
+
+function getPositionInParent(parentDiv, startingNode, positionRelativeToNode) {
   let totalPostition = positionRelativeToNode;
-  console.log("totalPostition: ", totalPostition);
 
   let currentNode = startingNode;
-  // console.log("startingNode: ", startingNode);
 
-  // console.log("currentNode (outside of loop): ", currentNode);
   while (currentNode) {
-    // This if statement only trigger if the cursor starts out inside of a span. In that case, it pops us up one level of the DOM tree, from the node inside of the span, to the span itself.
-
+    // This 👇 if statement only triggers if the cursor starts out inside of a span. In that case, it pops us up one level of the DOM tree, from the node inside of the span, to the span itself.
     // TODO (Joe): Traverse all the way up to the correct node
-    if (!currentNode.previousSibling) {
-      currentNode = currentNode.parentNode.previousSibling;
-    } else {
-      currentNode = currentNode.previousSibling;
-    }
+    currentNode =
+      currentNode.previousSibling || currentNode.parentNode.previousSibling;
 
     if (
       !currentNode ||
@@ -57,52 +52,46 @@ function getPositionInParent(positionRelativeToNode, startingNode, parentDiv) {
     ) {
       break;
     }
-    // console.log("currentNode (inside of loop): ", currentNode);
 
     totalPostition += currentNode.textContent.length;
-
-    // console.log("TotalPosition:", totalPostition);
-
-    // if (!currentNode and currentNode.parentNode != parentDiv){
-    //   currentNode = currentNode.parentNode;
-    // }
   }
-
   return totalPostition;
 }
 
 export default function ContentEditable(props) {
   const theDivRef = useRef();
 
-  // console.log("props.value: ", `"${props.value}"`);
-
   const [startOffsetCopy, setStartOffsetCopy] = useState();
   const [endOffsetCopy, setEndOffsetCopy] = useState();
 
+  /**
+   * @param {InputEvent} event
+   */
   const handleInput = (event) => {
     let selection = window.getSelection();
     let range = selection.getRangeAt(0);
-    // console.log("Range start and end: ", range.startOffset, range.endOffset);
 
-    // console.log("range.startOffset: ", range.startOffset);
+    // Selection stuff to save where the cursor is.
+    // #region
+
     setStartOffsetCopy(
       getPositionInParent(
-        range.startOffset,
+        theDivRef.current,
         range.startContainer,
-        theDivRef.current
+        range.startOffset
       )
     );
     setEndOffsetCopy(
       getPositionInParent(
-        range.endOffset,
+        theDivRef.current,
         range.endContainer,
-        theDivRef.current
+        range.endOffset
       )
     );
 
-    // console.log("Range start and end: ", startOffsetCopy, endOffsetCopy);
+    // #endregion
 
-    // props.onChange(normalizeSpaces(event.target.textContent));
+    // Updating the typedText state variable.
     props.onChange(event.target.textContent);
 
     // Future Eli: It's maybe important that all three of setStartOffsetCopy, setEndOffsetCopy, and props.onChange happen in the same rerender, or things might break. If this code isn't working, check that.

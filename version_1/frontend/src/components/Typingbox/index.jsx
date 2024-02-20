@@ -40,7 +40,7 @@ function typedTextParser(text) {
   // To find out more read documentation on RegExpMatchArray
 
   const arrayOfTokenInfos = arrayOfRegexMatches.map((element) => ({
-    firstCharacterPostition: element.index,
+    startPosition: element.index,
     tokenString: element[0],
   }));
 
@@ -77,8 +77,8 @@ function compareTexts(targetText, text) {
     }
   }
   return {
-    matchingWordInstances: tokenInfosOfMatchingWords,
-    mismatchingWordInstances: tokenInfosOfMismatchingWords,
+    matches: tokenInfosOfMatchingWords,
+    mismatches: tokenInfosOfMismatchingWords,
   };
 }
 
@@ -90,7 +90,7 @@ function textContentFromHtmlString(htmlString) {
   return textContent;
 }
 
-export default function Textbox({ textToType }) {
+export default function Typingbox({ textToType }) {
   // An alternative way to write this line:
   // export default function Textbox (props)
 
@@ -106,9 +106,6 @@ export default function Textbox({ textToType }) {
   );
 
   useEffect(() => {
-    // console.log("textToType is: ", textToType);
-    // console.log("text is: ", `"${typedTextWithHtml}"`);
-
     if (textToType.startsWith(typedTextContent)) {
       setIsValid(true);
     } else {
@@ -116,56 +113,41 @@ export default function Textbox({ textToType }) {
     }
   }, [typedTextContent]);
 
-  useEffect(() => {
-    compareTexts(textToType, typedTextContent);
-  }, [textToType, typedTextContent]);
+  // This 👇 function compares the typedTextConent and the textToType. For the words where those two strings don't match, we're going to put a span, with a special class name, around the offending word in typedTextWithHtml
+
+  // Note: Whenever we compare the text, we want to use a version of typedText that has stripped out the html, because otherwise we'll have problems. But whenever we set the text, we want to use raw text, with all the html, because that's the point of doing this fuction at all.
 
   useEffect(() => {
-    // Whenever we compare the text, we want to use a version of typedText that has stripped out the html, because otherwise we'll problems.
-    // But whenever we set the text, we want to use raw text, with all the html, because that's the point of doing this fuction at all.
-
-    const matchesAndMismatches = compareTexts(textToType, typedTextContent);
+    const { mismatches } = compareTexts(textToType, typedTextContent);
     // CompareTexts returns an object of two arrays of tokenInfos
-    const parsedText = typedTextParser(typedTextContent);
-    const reconstructedText = "";
 
-    if (matchesAndMismatches.mismatchingWordInstances.length == 0) {
-      setTypedTextWithHtml(typedTextWithHtml);
-    } else {
+    if (mismatches.length > 0) {
       let annotatedText = typedTextContent;
       // this is intializing the annotatedText, which means we're starting with just the textContent.
 
-      let additiveCorrectionFactor = 0;
+      let correctiveFactor = 0;
       // There's a problem, which that every time we add a span to the text, that makes all of the startingPostitions that we're passing in inaccacurate. They're off by the number of charcaters that are added with the span.
       // We're manually correcting for this by adding the correctiveFactor to each starting and ending position.
 
-      for (
-        let index = 0;
-        index < matchesAndMismatches.mismatchingWordInstances.length;
-        index++
-      ) {
-        const element = matchesAndMismatches.mismatchingWordInstances[index];
+      for (let index = 0; index < mismatches.length; index++) {
+        // Looping through all of the mismatches.
+        const mismatch = mismatches[index];
 
-        const startingPostition =
-          matchesAndMismatches.mismatchingWordInstances[index]
-            .firstCharacterPostition + additiveCorrectionFactor;
+        const startingPostition = mismatch.startPosition + correctiveFactor;
 
         const endingPosition =
-          matchesAndMismatches.mismatchingWordInstances[index]
-            .firstCharacterPostition +
-          matchesAndMismatches.mismatchingWordInstances[index].tokenString
-            .length +
-          additiveCorrectionFactor;
+          mismatch.startPosition +
+          mismatch.tokenString.length +
+          correctiveFactor;
+
+        // This is where we're doing the actual replacement of a word by a word wrapped in a span. To do that, we're dividing the string into everything before the token, the token, and everything after the token, and then doing the substitution.
 
         const beforeToken = annotatedText.substring(0, startingPostition);
-        // console.log("beforeToken: ", beforeToken);
         const token = annotatedText.substring(
           startingPostition,
           endingPosition
         );
-        // console.log("token :", token);
         const afterToken = annotatedText.substring(endingPosition);
-        // console.log("afterToken :", afterToken);
 
         const newText =
           beforeToken +
@@ -174,14 +156,9 @@ export default function Textbox({ textToType }) {
           `</span>` +
           afterToken;
 
-        // console.log(annotatedText);
-        // console.log(additiveCorrectionFactor);
-
         annotatedText = newText;
-        additiveCorrectionFactor =
-          annotatedText.length - typedTextContent.length;
+        correctiveFactor = annotatedText.length - typedTextContent.length;
       }
-      // console.log(annotatedText);
       setTypedTextWithHtml(annotatedText);
     }
   }, [typedTextContent]);
