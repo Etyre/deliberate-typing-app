@@ -112,7 +112,7 @@ export default function Typingbox({ textToType }) {
   // By the way, something about the way setText works ignores/removes spans in the text. In order for spans to persist from rendering to rendering, a function needs to reapply them each time.
   const [isValid, setIsValid] = useState(true);
 
-  const [mistypedTokens, setMistypedTokens] = useState([]);
+  const [mistypedTokensInfos, setMistypedTokensInfos] = useState([]);
 
   const typedTextContent = useMemo(
     () => textContentFromHtmlString(typedTextWithHtml),
@@ -174,10 +174,32 @@ export default function Typingbox({ textToType }) {
 
         annotatedText = newText;
         correctiveFactor = annotatedText.length - typedTextContent.length;
+
+        // Grabbing the tokenInfos of mistyped words.
+        // Every token of the targetText which is mistyped gets added to the mistypedTokenInfos, if and only if, that word in the target text (not the token, the specific instance of the token), hasn't been added already.
+
+        setMistypedTokensInfos((mistypedTokensInfos) => {
+          if (
+            !mistypedTokensInfos.find((tokenInfo) => {
+              return tokenInfo.startPosition == mismatch.startPosition;
+            })
+            // Future Eli, the thing that's happening here, is we're defining a function that is run on each element of mistypedTokenInfos. Each tokenInfo is passed in as an argument to the defined function, which returns a boolean.
+          ) {
+            return [...mistypedTokensInfos, mismatch];
+          } else {
+            return [...mistypedTokensInfos];
+          }
+        });
+        // We're doing this with arrow syntax to insure that the mistypedTokensInfos is updated by the time we use in the setter function, and we don't run into async problems.
       }
+
       setTypedTextWithHtml(annotatedText);
     }
   }, [typedTextContent]);
+
+  useEffect(() => {
+    console.log("mistypedTokensInfos: ", mistypedTokensInfos);
+  }, [mistypedTokensInfos]);
 
   return (
     <div className="typingBox">
