@@ -21,16 +21,17 @@ function typedTextParser(text) {
   // }
   // return arrayOfWordsWithSpaces;
 
-  const theWordIterator = text.matchAll(/[\w']+/g);
+  const theWordAndPunctIterator = text.matchAll(/[\w']+|[^\w\s']/g);
   // this returns an iterator
+  // It returns everything that's either a word or a punctuation mark.
 
-  const thePuncIterator = text.matchAll(/[^\w\s']/g);
+  // const thePuncIterator = text.matchAll(/[^\w\s']/g);
   // This regex matches everything that's not a words, space or apostrophe.
   // this returns an iterator
 
   // console.log("The punctuation tokens as an array: ", [...thePuncIterator]);
 
-  const arrayOfRegexMatches = [...thePuncIterator, ...theWordIterator];
+  const arrayOfRegexMatches = [...theWordAndPunctIterator];
   // This is an array of arrays.
 
   // Note that the punctuation marks are all at the front, instead of in order between the words. This is fine, we're putting them back in order later, but don't get confused about it.
@@ -69,6 +70,13 @@ function compareTexts(targetText, text) {
       break;
     }
 
+    console.log(
+      "parsedTargetText[index].tokenString: ",
+      parsedTargetText[index].tokenString
+    );
+
+    console.log("element.tokenString: ", element.tokenString);
+
     if (parsedTargetText[index].tokenString.startsWith(element.tokenString)) {
       console.log("The typed text matches the target text, so far!");
       tokenInfosOfMatchingWords.push(element);
@@ -76,6 +84,12 @@ function compareTexts(targetText, text) {
       tokenInfosOfMismatchingWords.push(element);
     }
   }
+  // console.log(
+  //   "matches:",
+  //   tokenInfosOfMatchingWords,
+  //   "mismatches: ",
+  //   tokenInfosOfMismatchingWords
+  // );
   return {
     matches: tokenInfosOfMatchingWords,
     mismatches: tokenInfosOfMismatchingWords,
@@ -105,13 +119,13 @@ export default function Typingbox({ textToType }) {
     [typedTextWithHtml]
   );
 
-  useEffect(() => {
-    if (textToType.startsWith(typedTextContent)) {
-      setIsValid(true);
-    } else {
-      setIsValid(false);
-    }
-  }, [typedTextContent]);
+  // useEffect(() => {
+  //   if (textToType.startsWith(typedTextContent)) {
+  //     setIsValid(true);
+  //   } else {
+  //     setIsValid(false);
+  //   }
+  // }, [typedTextContent]);
 
   // This 👇 function compares the typedTextConent and the textToType. For the words where those two strings don't match, we're going to put a span, with a special class name, around the offending word in typedTextWithHtml
 
@@ -120,6 +134,8 @@ export default function Typingbox({ textToType }) {
   useEffect(() => {
     const { mismatches } = compareTexts(textToType, typedTextContent);
     // CompareTexts returns an object of two arrays of tokenInfos
+
+    // console.log("mismatches: ", mismatches);
 
     if (mismatches.length > 0) {
       let annotatedText = typedTextContent;
