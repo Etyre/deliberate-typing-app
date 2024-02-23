@@ -81,7 +81,11 @@ function compareTexts(targetText, text) {
       console.log("The typed text matches the target text, so far!");
       tokenInfosOfMatchingWords.push(element);
     } else {
-      tokenInfosOfMismatchingWords.push(element);
+      const mismatchingPair = {
+        typedToken: element,
+        targetToken: parsedTargetText[index],
+      };
+      tokenInfosOfMismatchingWords.push(mismatchingPair);
     }
   }
   // console.log(
@@ -92,7 +96,7 @@ function compareTexts(targetText, text) {
   // );
   return {
     matches: tokenInfosOfMatchingWords,
-    mismatches: tokenInfosOfMismatchingWords,
+    mismatchingPairs: tokenInfosOfMismatchingWords,
   };
 }
 
@@ -132,12 +136,12 @@ export default function Typingbox({ textToType }) {
   // Note: Whenever we compare the text, we want to use a version of typedText that has stripped out the html, because otherwise we'll have problems. But whenever we set the text, we want to use raw text, with all the html, because that's the point of doing this fuction at all.
 
   useEffect(() => {
-    const { mismatches } = compareTexts(textToType, typedTextContent);
-    // CompareTexts returns an object of two arrays of tokenInfos
+    const { mismatchingPairs } = compareTexts(textToType, typedTextContent);
+    // CompareTexts returns an object of two arrays, one of tokenInfos and one of pairs of tokenInfos.
 
     // console.log("mismatches: ", mismatches);
 
-    if (mismatches.length > 0) {
+    if (mismatchingPairs.length > 0) {
       let annotatedText = typedTextContent;
       // this is intializing the annotatedText, which means we're starting with just the textContent.
 
@@ -145,15 +149,15 @@ export default function Typingbox({ textToType }) {
       // There's a problem, which that every time we add a span to the text, that makes all of the startingPostitions that we're passing in inaccacurate. They're off by the number of charcaters that are added with the span.
       // We're manually correcting for this by adding the correctiveFactor to each starting and ending position.
 
-      for (let index = 0; index < mismatches.length; index++) {
+      for (let index = 0; index < mismatchingPairs.length; index++) {
         // Looping through all of the mismatches.
-        const mismatch = mismatches[index];
+        const { typedToken, targetToken } = mismatchingPairs[index];
 
-        const startingPostition = mismatch.startPosition + correctiveFactor;
+        const startingPostition = typedToken.startPosition + correctiveFactor;
 
         const endingPosition =
-          mismatch.startPosition +
-          mismatch.tokenString.length +
+          typedToken.startPosition +
+          typedToken.tokenString.length +
           correctiveFactor;
 
         // This is where we're doing the actual replacement of a word by a word wrapped in a span. To do that, we're dividing the string into everything before the token, the token, and everything after the token, and then doing the substitution.
@@ -181,11 +185,11 @@ export default function Typingbox({ textToType }) {
         setMistypedTokensInfos((mistypedTokensInfos) => {
           if (
             !mistypedTokensInfos.find((tokenInfo) => {
-              return tokenInfo.startPosition == mismatch.startPosition;
+              return tokenInfo.startPosition == targetToken.startPosition;
             })
             // Future Eli, the thing that's happening here, is we're defining a function that is run on each element of mistypedTokenInfos. Each tokenInfo is passed in as an argument to the defined function, which returns a boolean.
           ) {
-            return [...mistypedTokensInfos, mismatch];
+            return [...mistypedTokensInfos, targetToken];
           } else {
             return [...mistypedTokensInfos];
           }
