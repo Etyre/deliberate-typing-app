@@ -12,3 +12,58 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id           Int     @id @default(autoincrement())
+  username     String
+  passwordHash String
+  emailAddress String
+  hasPaid      Boolean
+
+  samples Sample[]
+}
+
+model Sample {
+  id     Int  @id @default(autoincrement())
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+
+  dateTimeStart            DateTime
+  dateTimeEnd              DateTime
+  targetText               String
+  numberOfTargetWords      Int
+  numberOfTargetCharacters Int
+  trainingTokens           String[]
+
+  missedWords         String[]
+  numberOfMissedWords Int
+
+  sampleTrackedTokens  SampleTrackedToken[]
+  sampleTrainingTokens SampleTrainingToken[]
+}
+
+model TrackedToken {
+  id   Int    @id @default(autoincrement())
+  text String
+
+  sampleTrackedTokens  SampleTrackedToken[]
+  sampleTrainingTokens SampleTrainingToken[]
+}
+
+model SampleTrackedToken {
+  id             Int          @id @default(autoincrement())
+  sampleId       Int
+  sample         Sample       @relation(fields: [sampleId], references: [id])
+  trackedTokenId Int
+  trackedToken   TrackedToken @relation(fields: [trackedTokenId], references: [id])
+  startIndex     Int
+  isCorrect      Boolean
+}
+
+model SampleTrainingToken {
+  id             Int          @id @default(autoincrement())
+  sampleId       Int
+  sample         Sample       @relation(fields: [sampleId], references: [id])
+  trackedTokenId Int
+  trackedToken   TrackedToken @relation(fields: [trackedTokenId], references: [id])
+}

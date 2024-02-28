@@ -3,6 +3,7 @@ import path from "path"
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 // Got this from here: https://stackoverflow.com/a/50052194
 
@@ -16,4 +17,3 @@ app.use('/', express.static(path.join(__dirname, '../frontend/dist')))
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
-
