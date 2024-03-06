@@ -4,23 +4,7 @@ import ContentEditable from "../ContentEditable";
 /**
  * @param {string} text
  */
-function typedTextParser(text) {
-  // let arrayOfWords = text.split(" ");
-  // // let arrayOfWords = text.split("");
-  // // Note: There are two ways, in principle, that we might want this to work. Either individual words are flagged as mistyped, but only after you "submit" them by hitting space. Or individual characters are flagged as wrong as soon as you type them. To do the second thing, I would need to build a bit of extra machinery, so that we're still able to log which whole words were mistyped, not just which characters. But this could be a setting, maybe.
-  // let arrayOfWordsWithSpaces = [];
-  // for (let index = 0; index < arrayOfWords.length; index++) {
-  //   // We're adding a space to the end of each element, except for the last one.
-  //   let element;
-  //   if (index == arrayOfWords.length - 1) {
-  //     element = arrayOfWords[index];
-  //   } else {
-  //     element = arrayOfWords[index] + " ";
-  //   }
-  //   arrayOfWordsWithSpaces.push(element);
-  // }
-  // return arrayOfWordsWithSpaces;
-
+function parseText(text) {
   const theWordAndPunctIterator = text.matchAll(/[\w']+|[^\w\s']/g);
   // this returns an iterator
   // It returns everything that's either a word or a punctuation mark.
@@ -49,8 +33,8 @@ function typedTextParser(text) {
 }
 
 function compareTexts(targetText, text) {
-  const parsedTargetText = typedTextParser(targetText);
-  const parsedText = typedTextParser(text);
+  const parsedTargetText = parseText(targetText);
+  const parsedText = parseText(text);
 
   let tokenInfosOfMatchingWords = [];
   let tokenInfosOfMismatchingWords = [];

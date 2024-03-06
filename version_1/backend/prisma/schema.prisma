@@ -31,8 +31,8 @@ model Sample {
   dateTimeStart            DateTime
   dateTimeEnd              DateTime
   targetText               String
-  numberOfTargetWords      Int
-  numberOfTargetCharacters Int
+  numberOfTargetWords      Int?
+  numberOfTargetCharacters Int?
   trainingTokens           String[]
 
   missedWords         String[]
