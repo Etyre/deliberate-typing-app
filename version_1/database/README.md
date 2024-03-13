@@ -8,7 +8,7 @@ docker build -t eli/postgres:1.0 .
 
 ### Running
 
-This is the command for running the image, after it is built.
+This is the command for running the image (making a container from the image), after it is built.
 
 ```
 docker run -p 5432:5432 -t eli/postgres:1.0

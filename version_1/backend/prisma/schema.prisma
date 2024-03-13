@@ -15,9 +15,9 @@ datasource db {
 
 model User {
   id           Int     @id @default(autoincrement())
-  username     String
-  passwordHash String
-  emailAddress String
+  username     String?
+  passwordHash String?
+  emailAddress String?
   hasPaid      Boolean
 
   samples Sample[]
@@ -33,7 +33,6 @@ model Sample {
   targetText               String
   numberOfTargetWords      Int?
   numberOfTargetCharacters Int?
-  trainingTokens           String[]
 
   missedWords         String[]
   numberOfMissedWords Int
@@ -50,6 +49,7 @@ model TrackedToken {
   sampleTrainingTokens SampleTrainingToken[]
 }
 
+// After a word is missed for the first time it is added to tracked tokens. Ever after, we track the number of hits and misses of that token.
 model SampleTrackedToken {
   id             Int          @id @default(autoincrement())
   sampleId       Int
@@ -57,9 +57,10 @@ model SampleTrackedToken {
   trackedTokenId Int
   trackedToken   TrackedToken @relation(fields: [trackedTokenId], references: [id])
   startIndex     Int
-  isCorrect      Boolean
+  wasMissed      Boolean
 }
 
+// Each sample (after the first ever missed word), has an associated set of tokens (a subset of tracked tokens), that are served in particular in that sample.
 model SampleTrainingToken {
   id             Int          @id @default(autoincrement())
   sampleId       Int

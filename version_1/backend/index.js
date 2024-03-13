@@ -69,28 +69,89 @@ function parseText(text) {
   return arrayOfTokenInfos;
 }
 
+function checkIfTracked(token) {}
+
 app.post("/api/sample-run", async (req, res) => {
-  const dateTimeStart = req.body.sampleData.dateTimeStart;
-  const dateTimeEnd = req.body.sampleData.dateTimeEnd;
+  const dateTimeStart = new Date(req.body.sampleData.dateTimeStart);
+  const dateTimeEnd = new Date(req.body.sampleData.dateTimeEnd);
   const targetText = req.body.sampleData.targetText;
   const trainingTokens = req.body.sampleData.trainingTokens;
   const missedWords = req.body.sampleData.missedWords;
   const user = await getCurrentUser();
+  const arrayOfTokenInfosOfSampleText = parseText(targetText);
 
-  prisma.sample.create({
+  //  TODO: We need to write some code that will take the list of missed words, and use that update the table of Tracked Tokens, in two ways: both updating the ratios of already tracked tokens, and tracking any untracked tokens that were mised.
+
+  const sampleRecord = await prisma.sample.create({
     data: {
       userId: user.id,
       dateTimeStart: dateTimeStart,
       dateTimeEnd: dateTimeEnd,
       targetText: targetText,
       numberOfTargetCharacters: targetText.length,
-      numberOfTargetWords: parseText(targetText).length,
+      numberOfTargetWords: arrayOfTokenInfosOfSampleText.length,
 
-      trainingTokens: trainingTokens,
-      missedWords: missedWords,
+      // missedWords: missedWords,
       numberOfMissedWords: missedWords.length,
     },
   });
+
+  for (let index = 0; index < missedWords.length; index++) {
+    const word = missedWords[index];
+    const wordText = word.tokenString;
+    await prisma.trackedToken.upsert({
+      where: { text: wordText },
+      update: {},
+      create: { text: wordText },
+    });
+  }
+
+  // SELECT ALL "TrackedToken" WHERE "TrackedToken.text" IN arrayOfTokenInfosOfSampleText
+
+  const arrayOfRelevantTrackedTokens = await prisma.trackedToken.findMany({
+    where: { text: { in: arrayOfTokenInfosOfSampleText } },
+  });
+
+  for (let index = 0; index < arrayOfTokenInfosOfSampleText.length; index++) {
+    const word = arrayOfTokenInfosOfSampleText[index];
+
+    const matchingToken = arrayOfRelevantTrackedTokens.find((trackedToken) => {
+      return word.tokenString == trackedToken.text;
+    });
+
+    const wasMissed = missedWords.some((missedWord) => {
+      return word.startPosition == missedWord.startPosition;
+    });
+
+    // if the block above doesn't find a match, matchingToken is set to undefined, which is falsey.
+    if (matchingToken) {
+      await prisma.sampleTrackedToken.create({
+        data: {
+          sampleId: sampleRecord.id,
+          trackedTokenId: matchingToken.id,
+          startIndex: word.startPosition,
+          wasMissed: wasMissed,
+        },
+      });
+    }
+  }
+
+  for (let index = 0; index < trainingTokens.length; index++) {
+    const trainingToken = array[index];
+
+    const trackedToken = arrayOfRelevantTrackedTokens.find((trackedToken) => {
+      return trainingToken.text == trackedToken.text;
+    });
+
+    await prisma.sampleTrainingToken.create({
+      data: {
+        sampleId: sampleRecord.id,
+        trackedTokenId: trackedToken.id,
+      },
+    });
+  }
+
+  res.send("We got it!");
 });
 
 async function getSample(prompt) {
