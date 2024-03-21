@@ -5,10 +5,11 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js",
     "dev": "node --watch index.js",
     "migrate": "npx prisma migrate dev",
+    "seed": "npx prisma migrate reset && node ./prisma/seed.js",
+    "grant-seed-permissions": "chown prisma ./prisma/seed.js",
     "generate": "npx prisma generate"
   },
   "author": "",
