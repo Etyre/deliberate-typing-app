@@ -4,6 +4,7 @@ import ContentEditable from "../ContentEditable";
 /**
  * @param {string} text
  */
+
 function parseText(text) {
   const theWordAndPunctIterator = text.matchAll(/[\w']+|[^\w\s']/g);
   // this returns an iterator
@@ -100,12 +101,33 @@ export default function Typingbox({ textToType }) {
   // By the way, something about the way setText works ignores/removes spans in the text. In order for spans to persist from rendering to rendering, a function needs to reapply them each time.
   const [isValid, setIsValid] = useState(true);
 
+  /**
+   * @type { [{startPosition: number | undefined, tokenSring: string }[]] }
+   */
+
   const [mistypedTokensInfos, setMistypedTokensInfos] = useState([]);
 
   const typedTextContent = useMemo(
     () => textContentFromHtmlString(typedTextWithHtml),
     [typedTextWithHtml]
   );
+
+  const [dateTimeStart, setDateTimeStart] = useState(null);
+  const [dateTimeEnd, setDateTimeEnd] = useState(null);
+
+  // This function captures the start time as soon as the user starts typing.
+  useEffect(() => {
+    if (dateTimeStart == null && typedTextContent) {
+      setDateTimeStart(new Date().toISOString());
+    }
+  }, [dateTimeStart, typedTextContent]);
+
+  // This function captures the start time the moment the user correctly completes the sample.
+  useEffect(() => {
+    if (dateTimeEnd == null && typedTextContent == targetText) {
+      setDateTimeEnd(new Date().toISOString());
+    }
+  }, [dateTimeEnd, typedTextContent]);
 
   // useEffect(() => {
   //   if (textToType.startsWith(typedTextContent)) {

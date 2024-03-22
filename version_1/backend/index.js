@@ -73,6 +73,7 @@ function checkIfTracked(token) {}
 
 // This whole thing is the code that takes the results of a sample-run, sent from the front end in json format, and saves in the database.
 app.post("/api/sample-run", async (req, res) => {
+  console.log("FooBoo: ", req.body.sampleData.dateTimeStart);
   const dateTimeStart = new Date(req.body.sampleData.dateTimeStart);
   const dateTimeEnd = new Date(req.body.sampleData.dateTimeEnd);
   const targetText = req.body.sampleData.targetText;
@@ -83,6 +84,7 @@ app.post("/api/sample-run", async (req, res) => {
 
   //  TODO: We need to write some code that will take the list of missed words, and use that to update the table of Tracked Tokens, in two ways: both updating the ratios of already tracked tokens, and tracking any untracked tokens that were mised.
 
+  console.log("dateTimeStart: ", dateTimeStart);
   const sampleRecord = await prisma.sample.create({
     data: {
       userId: user.id,
@@ -177,7 +179,7 @@ async function getSample(prompt) {
   return await openAiApi(prompt);
 }
 
-app.get("/api/sample", async (req, res) => {
+app.get("/api/sample-text", async (req, res) => {
   const testPrompt =
     "Please give me a paragraph on any topic. It should be about 50 to 100 words long.";
   const sample = await getSample(testPrompt);
