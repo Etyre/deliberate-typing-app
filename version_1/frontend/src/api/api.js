@@ -1,9 +1,9 @@
 // To get the sample text from the backend (which gets it from GPT-4), and returns the data as an object.
-export async function getSampleText() {
+export async function getTrial() {
   const response = await fetch("http://localhost:5173/api/sample-text", {
     method: "get",
   });
-  return await response.text();
+  return await response.json();
 }
 
 // To send the data from a completed sample run to the backend
@@ -15,7 +15,7 @@ export async function sendCompletedSampleData({
   trainingTokens,
   missedWords,
 }) {
-  const response = await fetch("http://localhost:3000/api/sample-run", {
+  const response = await fetch("http://localhost:5173/api/sample-run", {
     method: "post",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({

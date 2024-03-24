@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, useMemo } from "react";
 import ContentEditable from "../ContentEditable";
+import { sendCompletedSampleData } from "../../api/api";
 
 /**
  * @param {string} text
@@ -93,7 +94,7 @@ function textContentFromHtmlString(htmlString) {
   return textContent;
 }
 
-export default function Typingbox({ textToType }) {
+export default function Typingbox({ targetText, trainingTokens }) {
   // An alternative way to write this line:
   // export default function Textbox (props)
 
@@ -142,7 +143,7 @@ export default function Typingbox({ textToType }) {
   // Note: Whenever we compare the text, we want to use a version of typedText that has stripped out the html, because otherwise we'll have problems. But whenever we set the text, we want to use raw text, with all the html, because that's the point of doing this fuction at all.
 
   useEffect(() => {
-    const { mismatchingPairs } = compareTexts(textToType, typedTextContent);
+    const { mismatchingPairs } = compareTexts(targetText, typedTextContent);
     // CompareTexts returns an object of two arrays, one of tokenInfos and one of pairs of tokenInfos.
 
     // console.log("mismatches: ", mismatches);
@@ -223,6 +224,21 @@ export default function Typingbox({ textToType }) {
       {/* <div onInput={handleText} className={"editableSection " + (isValid==false? "redTextArea": "")} dangerouslySetInnerHTML={{__html: text}} contentEditable="true">
                 
             </div> */}
+
+      <button
+        onClick={async () => {
+          const data = {
+            dateTimeStart: dateTimeStart,
+            dateTimeEnd: dateTimeEnd,
+            targetText: targetText,
+            trainingTokens: trainingTokens,
+            missedWords: mistypedTokensInfos,
+          };
+          await sendCompletedSampleData(data);
+        }}
+      >
+        Press this button when you've finished the run (not before!)
+      </button>
     </div>
   );
 }

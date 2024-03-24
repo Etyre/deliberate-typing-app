@@ -85,6 +85,8 @@ app.post("/api/sample-run", async (req, res) => {
   //  TODO: We need to write some code that will take the list of missed words, and use that to update the table of Tracked Tokens, in two ways: both updating the ratios of already tracked tokens, and tracking any untracked tokens that were mised.
 
   console.log("dateTimeStart: ", dateTimeStart);
+  console.log("targetText: ", targetText);
+
   const sampleRecord = await prisma.sample.create({
     data: {
       userId: user.id,
@@ -159,7 +161,7 @@ app.post("/api/sample-run", async (req, res) => {
     console.log("arrayOfRelevantTrackedTokens: ", arrayOfRelevantTrackedTokens);
     console.log("traingToken: ", trainingToken);
 
-    // Here, we're grabbing the tackedToken the Tracked Token table, so we can get the id.
+    // Here, we're grabbing the Tracked Token table, so we can get the id.
     const trackedToken = arrayOfRelevantTrackedTokens.find((trackedToken) => {
       return trainingToken.text == trackedToken.text;
     });
@@ -179,11 +181,24 @@ async function getSample(prompt) {
   return await openAiApi(prompt);
 }
 
+async function determineTrainingTokens(numberOfTokens) {
+  const users = await prisma.sampleTrackedToken.findMany();
+
+  console.log(users);
+}
+
 app.get("/api/sample-text", async (req, res) => {
+  const trainingTokens = ["house", "glory", "strong", "plant"];
+
+  const stringOfTrainingTokens = trainingTokens.join("\n");
+
   const testPrompt =
-    "Please give me a paragraph on any topic. It should be about 50 to 100 words long.";
+    `Please give me a paragraph on any topic. It should be about 50 to 100 words long.
+    
+    The paragraph should include the following words. Use each of these words at least once.
+    ` + stringOfTrainingTokens;
   const sample = await getSample(testPrompt);
-  res.send(sample);
+  res.send({ targetText: sample, trainingTokens: trainingTokens });
 });
 
 app.listen(port, () => {
