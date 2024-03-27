@@ -39,5 +39,5 @@ docker exec -it eli-postgres psql -U elityre -d deliberate_typing_app
 To check the tables in the SQL database inside of the prisma thing:
 
 ```
-\dt
+\dt;
 ```

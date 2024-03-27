@@ -105,19 +105,19 @@ app.post("/api/sample-run", async (req, res) => {
     const word = missedWords[index];
     const wordText = word.tokenString;
     await prisma.trackedToken.upsert({
-      where: { text: wordText },
+      where: { tokenString: wordText },
       update: {},
-      create: { text: wordText },
+      create: { tokenString: wordText },
     });
   }
 
-  // SELECT ALL "TrackedToken" WHERE "TrackedToken.text" IN arrayOfTokenInfosOfSampleText
+  // SELECT ALL "TrackedToken" WHERE "TrackedToken.tokenString" IN arrayOfTokenInfosOfSampleText
 
   // We're looking for "relevant tracked tokens", for this sample. A relevant tracked token is any tracked token that shows up in the target text of this sample. That includes the all the training tokens, but it might also include tracked tokens that were not served as training tokens this time. This function gives us a list of all the tracked tokens.
 
   const arrayOfRelevantTrackedTokens = await prisma.trackedToken.findMany({
     where: {
-      text: {
+      tokenString: {
         in: arrayOfTokenInfosOfSampleText.map(
           (tokenInfo) => tokenInfo.tokenString
         ),
@@ -129,7 +129,7 @@ app.post("/api/sample-run", async (req, res) => {
     const word = arrayOfTokenInfosOfSampleText[index];
 
     const matchingToken = arrayOfRelevantTrackedTokens.find((trackedToken) => {
-      return word.tokenString == trackedToken.text;
+      return word.tokenString == trackedToken.tokenString;
     });
 
     const wasMissed = missedWords.some((missedWord) => {
@@ -163,7 +163,7 @@ app.post("/api/sample-run", async (req, res) => {
 
     // Here, we're grabbing the Tracked Token table, so we can get the id.
     const trackedToken = arrayOfRelevantTrackedTokens.find((trackedToken) => {
-      return trainingToken.text == trackedToken.text;
+      return trainingToken.tokenString == trackedToken.tokenString;
     });
 
     await prisma.sampleTrainingToken.create({
@@ -188,12 +188,21 @@ async function determineTrainingTokens(numberOfTokens) {
 }
 
 app.get("/api/sample-text", async (req, res) => {
-  const trainingTokens = ["house", "glory", "strong", "plant"];
+  const trainingTokens = [
+    { tokenString: "house" },
+    { tokenString: "glory" },
+    { tokenString: "strong" },
+    { tokenString: "plant" },
+  ];
 
-  const stringOfTrainingTokens = trainingTokens.join("\n");
+  const stringOfTrainingTokens = trainingTokens
+    .map((token) => {
+      return token.tokenString;
+    })
+    .join("\n");
 
   const testPrompt =
-    `Please give me a paragraph on any topic. It should be about 50 to 100 words long.
+    `Please give me a paragraph on any topic. It should be about 25 to 75 words long.
     
     The paragraph should include the following words. Use each of these words at least once.
     ` + stringOfTrainingTokens;

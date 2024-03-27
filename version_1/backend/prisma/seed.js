@@ -4,11 +4,11 @@ const prisma = new PrismaClient();
 
 await prisma.trackedToken.createMany({
   data: [
-    { text: "house" },
-    { text: "glory" },
-    { text: "strong" },
-    { text: "plant" },
-    { text: "for" },
+    { tokenString: "house" },
+    { tokenString: "glory" },
+    { tokenString: "strong" },
+    { tokenString: "plant" },
+    { tokenString: "for" },
   ],
 });
 

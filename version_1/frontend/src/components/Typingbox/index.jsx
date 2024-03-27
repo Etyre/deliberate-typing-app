@@ -227,6 +227,7 @@ export default function Typingbox({ targetText, trainingTokens }) {
 
       <button
         onClick={async () => {
+          setCurrentTrial(null);
           const data = {
             dateTimeStart: dateTimeStart,
             dateTimeEnd: dateTimeEnd,

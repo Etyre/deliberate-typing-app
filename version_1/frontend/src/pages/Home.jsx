@@ -4,18 +4,37 @@ import { useEffect, useState } from "react";
 import { getTrial, sendCompletedSampleData } from "../api/api.js";
 
 export default function Home() {
+  const [currentTrial, setCurrentTrial] = useState(null);
+  const [onDeckTrial, setOnDeckTrial] = useState(null);
+
   const [textToType, setTextToType] = useState("");
   const [trainingTokens, setTrainingTokens] = useState([]);
 
   useEffect(() => {
-    async function getSampleAndSetTextToType() {
-      const trial = await getTrial();
-      console.log(trial);
-      setTextToType(trial.targetText);
-      setTrainingTokens(trial.trainingTokens);
+    if (!currentTrial && onDeckTrial) {
+      setCurrentTrial(onDeckTrial);
+      setOnDeckTrial(null);
     }
-    getSampleAndSetTextToType();
-  }, []);
+  }, [currentTrial, onDeckTrial]);
+  // Sometimes we do something (currently with a button), that sets currentTrial to null, to start this cascade.
+
+  useEffect(() => {
+    async function getTrialForOnDeck() {
+      if (!onDeckTrial) {
+        const trial = await getTrial();
+        setOnDeckTrial(trial);
+      }
+    }
+    getTrialForOnDeck();
+  }, [onDeckTrial]);
+
+  useEffect(() => {
+    if (currentTrial) {
+      setTextToType(currentTrial.targetText);
+      setTrainingTokens(currentTrial.trainingTokens);
+    }
+    // This is in an "if" clause, so that it doesn't trigger in brief periods when currentTrial is null.
+  }, [currentTrial]);
 
   console.log(trainingTokens);
 
@@ -27,6 +46,7 @@ export default function Home() {
           key={textToType}
           trainingTokens={trainingTokens}
           targetText={textToType}
+          setCurrentTrial={setCurrentTrial}
         ></Typingbox>
       </div>
     </>

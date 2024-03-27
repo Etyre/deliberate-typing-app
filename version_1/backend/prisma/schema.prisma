@@ -42,8 +42,8 @@ model Sample {
 }
 
 model TrackedToken {
-  id   Int    @id @default(autoincrement())
-  text String @unique
+  id          Int    @id @default(autoincrement())
+  tokenString String @unique
 
   sampleTrackedTokens  SampleTrackedToken[]
   sampleTrainingTokens SampleTrainingToken[]
