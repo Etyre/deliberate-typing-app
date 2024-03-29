@@ -23,12 +23,18 @@ app.use("/", express.static(path.join(__dirname, "../frontend/dist")));
 app.use(express.json());
 
 function isUserLoggedIn() {
-  return false;
+  return true;
 }
 
 async function getCurrentUser() {
   if (isUserLoggedIn()) {
-    // use primsa to get the user data from the database
+    return {
+      id: 1,
+      username: null,
+      passwordHash: null,
+      emailAddress: null,
+      hasPaid: false,
+    };
   } else {
     return await prisma.user.create({
       data: {
@@ -78,9 +84,17 @@ app.post("/api/sample-run", async (req, res) => {
   const dateTimeEnd = new Date(req.body.sampleData.dateTimeEnd);
   const targetText = req.body.sampleData.targetText;
   const trainingTokens = req.body.sampleData.trainingTokens;
-  const missedWords = req.body.sampleData.missedWords;
+  const missedWordsRaw = req.body.sampleData.missedWords;
+  const missedWords = missedWordsRaw.map((word) => {
+    return { ...word, tokenString: word.tokenString.toLocaleLowerCase() };
+  });
   const user = await getCurrentUser();
-  const arrayOfTokenInfosOfSampleText = parseText(targetText);
+  const arrayOfTokenInfosOfSampleTextRaw = parseText(targetText);
+  const arrayOfTokenInfosOfSampleText = arrayOfTokenInfosOfSampleTextRaw.map(
+    (token) => {
+      return { ...token, tokenString: token.tokenString.toLocaleLowerCase() };
+    }
+  );
 
   //  TODO: We need to write some code that will take the list of missed words, and use that to update the table of Tracked Tokens, in two ways: both updating the ratios of already tracked tokens, and tracking any untracked tokens that were mised.
 
@@ -187,13 +201,35 @@ async function determineTrainingTokens(numberOfTokens) {
   console.log(users);
 }
 
+async function getMostMissedTokens(n, userId) {
+  const mostMissedTokens = await prisma.$queryRaw`
+    SELECT
+      TT."id",
+      TT."tokenString",
+      SUM(CASE WHEN "wasMissed" = TRUE THEN 1 ELSE 0 END)::float / COUNT(STT."id") AS "missRatio"
+    FROM
+      "TrackedToken" AS TT
+        INNER JOIN "SampleTrackedToken" AS STT
+        ON(TT."id" = STT."trackedTokenId")
+          INNER JOIN "Sample" AS S
+          ON(STT."sampleId" = S."id")
+            INNER JOIN "User" AS U
+            ON(S."userId" = U."id")
+    WHERE
+      U."id" = ${userId}
+    GROUP BY
+      TT."id", TT."tokenString"
+    ORDER BY 
+      "missRatio" DESC
+    LIMIT ${n};
+  `;
+  console.log("mostMissed:", mostMissedTokens);
+  return mostMissedTokens;
+}
+
 app.get("/api/sample-text", async (req, res) => {
-  const trainingTokens = [
-    { tokenString: "house" },
-    { tokenString: "glory" },
-    { tokenString: "strong" },
-    { tokenString: "plant" },
-  ];
+  const currentUser = await getCurrentUser();
+  const trainingTokens = await getMostMissedTokens(4, currentUser.id);
 
   const stringOfTrainingTokens = trainingTokens
     .map((token) => {
@@ -201,12 +237,20 @@ app.get("/api/sample-text", async (req, res) => {
     })
     .join("\n");
 
-  const testPrompt =
-    `Please give me a paragraph on any topic. It should be about 25 to 75 words long.
+  let ourPrompt;
+  if (trainingTokens.length) {
+    ourPrompt =
+      `Please give me a sentence, or a few sentences, on any topic. It should be about 25 to 50 words long.
     
-    The paragraph should include the following words. Use each of these words at least once.
-    ` + stringOfTrainingTokens;
-  const sample = await getSample(testPrompt);
+The paragraph should include the following words. Use each of these words at least once.
+    
+` + stringOfTrainingTokens;
+  } else {
+    ourPrompt = `Please make up a short snippet of text, on any topic. It should be about 25 to 50 words long.`;
+  }
+
+  const sample = await getSample(ourPrompt);
+  console.log(ourPrompt);
   res.send({ targetText: sample, trainingTokens: trainingTokens });
 });
 

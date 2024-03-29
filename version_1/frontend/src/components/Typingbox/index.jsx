@@ -94,7 +94,11 @@ function textContentFromHtmlString(htmlString) {
   return textContent;
 }
 
-export default function Typingbox({ targetText, trainingTokens }) {
+export default function Typingbox({
+  targetText,
+  trainingTokens,
+  setCurrentTrial,
+}) {
   // An alternative way to write this line:
   // export default function Textbox (props)
 
