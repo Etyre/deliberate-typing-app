@@ -3,6 +3,8 @@ export default function TextToTypeBox({ textToType }) {
     setTextToType(event.target.value);
   }
 
+  console.log("Text to Type: ", textToType);
+
   return (
     <div className="textToTypeBox">
       <p>{textToType}</p>

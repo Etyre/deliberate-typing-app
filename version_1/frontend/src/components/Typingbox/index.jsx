@@ -216,10 +216,31 @@ export default function Typingbox({
     console.log("mistypedTokensInfos: ", mistypedTokensInfos);
   }, [mistypedTokensInfos]);
 
+  async function submitSampleRun() {
+    if (dateTimeEnd) {
+      setCurrentTrial(null);
+      const data = {
+        dateTimeStart: dateTimeStart,
+        dateTimeEnd: dateTimeEnd,
+        targetText: targetText,
+        trainingTokens: trainingTokens,
+        missedWords: mistypedTokensInfos,
+      };
+      await sendCompletedSampleData(data);
+    }
+  }
+
+  async function submitSampleRunViaKeystroke(event) {
+    if (event.key == "Enter") {
+      submitSampleRun();
+    }
+  }
+
   return (
     <div className="typingBox">
       <ContentEditable
         value={typedTextWithHtml}
+        onKeyPress={submitSampleRunViaKeystroke}
         onChange={(newValue) => {
           setTypedTextWithHtml(newValue);
         }}
@@ -229,20 +250,7 @@ export default function Typingbox({
                 
             </div> */}
 
-      <button
-        disabled={!dateTimeEnd}
-        onClick={async () => {
-          setCurrentTrial(null);
-          const data = {
-            dateTimeStart: dateTimeStart,
-            dateTimeEnd: dateTimeEnd,
-            targetText: targetText,
-            trainingTokens: trainingTokens,
-            missedWords: mistypedTokensInfos,
-          };
-          await sendCompletedSampleData(data);
-        }}
-      >
+      <button disabled={!dateTimeEnd} onClick={submitSampleRun}>
         submit
       </button>
     </div>

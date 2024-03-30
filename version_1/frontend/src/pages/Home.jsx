@@ -41,7 +41,10 @@ export default function Home() {
   return (
     <>
       <div className="textAndTypingContainer">
-        <TextToTypeBox textToType={textToType}></TextToTypeBox>
+        <TextToTypeBox
+          trainingTokens={trainingTokens}
+          textToType={textToType}
+        ></TextToTypeBox>
         <Typingbox
           key={textToType}
           trainingTokens={trainingTokens}

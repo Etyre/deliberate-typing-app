@@ -150,6 +150,8 @@ export default function ContentEditable(props) {
       onInput={handleInput}
       ref={theDivRef}
       dangerouslySetInnerHTML={{ __html: props.value }}
+      onKeyPress={props.onKeyPress}
+
       //This line right here is just for the initial value, in case I want to pass in something other than the empty string.
     />
   );
