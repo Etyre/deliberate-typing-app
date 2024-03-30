@@ -230,6 +230,7 @@ export default function Typingbox({
             </div> */}
 
       <button
+        disabled={!dateTimeEnd}
         onClick={async () => {
           setCurrentTrial(null);
           const data = {
@@ -242,7 +243,7 @@ export default function Typingbox({
           await sendCompletedSampleData(data);
         }}
       >
-        Press this button when you've finished the run (not before!)
+        submit
       </button>
     </div>
   );
