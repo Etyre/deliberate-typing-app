@@ -104,4 +104,6 @@ button:focus-visible {
   color: red;
 }
   
-
+.trainingToken {
+  color: orange
+}
