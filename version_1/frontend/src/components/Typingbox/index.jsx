@@ -11,12 +11,6 @@ function parseText(text) {
   // this returns an iterator
   // It returns everything that's either a word or a punctuation mark.
 
-  // const thePuncIterator = text.matchAll(/[^\w\s']/g);
-  // This regex matches everything that's not a words, space or apostrophe.
-  // this returns an iterator
-
-  // console.log("The punctuation tokens as an array: ", [...thePuncIterator]);
-
   const arrayOfRegexMatches = [...theWordAndPunctIterator];
   // This is an array of arrays.
 
@@ -41,16 +35,12 @@ function compareTexts(targetText, text) {
   let tokenInfosOfMatchingWords = [];
   let tokenInfosOfMismatchingWords = [];
 
-  // console.log("The parsedTargetText", parsedTargetText);
-
   for (
     let index = 0;
     index < Math.max(parsedText.length, parsedTargetText.length);
     index++
   ) {
     const element = parsedText[index];
-    // console.log("parsedTargetText[index]: ", parsedTargetText[index]);
-    // console.log("element: ", element);
 
     if (!element || !parsedTargetText[index]) {
       break;
@@ -74,12 +64,7 @@ function compareTexts(targetText, text) {
       tokenInfosOfMismatchingWords.push(mismatchingPair);
     }
   }
-  // console.log(
-  //   "matches:",
-  //   tokenInfosOfMatchingWords,
-  //   "mismatches: ",
-  //   tokenInfosOfMismatchingWords
-  // );
+
   return {
     matches: tokenInfosOfMatchingWords,
     mismatchingPairs: tokenInfosOfMismatchingWords,
@@ -134,23 +119,13 @@ export default function Typingbox({
     }
   }, [dateTimeEnd, typedTextContent]);
 
-  // useEffect(() => {
-  //   if (textToType.startsWith(typedTextContent)) {
-  //     setIsValid(true);
-  //   } else {
-  //     setIsValid(false);
-  //   }
-  // }, [typedTextContent]);
-
-  // This 👇 function compares the typedTextConent and the textToType. For the words where those two strings don't match, we're going to put a span, with a special class name, around the offending word in typedTextWithHtml
+  // This 👇 function compares the typedTextContent and the textToType. For the words where those two strings don't match, we're going to put a span, with a special class name, around the offending word in typedTextWithHtml
 
   // Note: Whenever we compare the text, we want to use a version of typedText that has stripped out the html, because otherwise we'll have problems. But whenever we set the text, we want to use raw text, with all the html, because that's the point of doing this fuction at all.
 
   useEffect(() => {
     const { mismatchingPairs } = compareTexts(targetText, typedTextContent);
     // CompareTexts returns an object of two arrays, one of tokenInfos and one of pairs of tokenInfos.
-
-    // console.log("mismatches: ", mismatches);
 
     if (mismatchingPairs.length > 0) {
       let annotatedText = typedTextContent;
@@ -245,11 +220,6 @@ export default function Typingbox({
           setTypedTextWithHtml(newValue);
         }}
       />
-      {/* <textarea className={isValid==false? "redTextArea": ""} onChange={handleText} /> */}
-      {/* <div onInput={handleText} className={"editableSection " + (isValid==false? "redTextArea": "")} dangerouslySetInnerHTML={{__html: text}} contentEditable="true">
-                
-            </div> */}
-
       <button disabled={!dateTimeEnd} onClick={submitSampleRun}>
         submit
       </button>
