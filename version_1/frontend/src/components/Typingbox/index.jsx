@@ -53,9 +53,22 @@ function compareTexts(targetText, text) {
 
     console.log("element.tokenString: ", element.tokenString);
 
-    if (parsedTargetText[index].tokenString.startsWith(element.tokenString)) {
+    // This code is a little weird. We're checking if a given token is correct. And we're using a different criterion for the last typed token, then for all the other typed tokens. For the last typed token, we want to know if it is correct so far. For all the other typed tokens, we want to know if it is correct and complete. We're checking for those conditions, putting them in variables, and then evaluating those varibles in a conditional.
+    const isNonMostRecentTypedTokenAndIsComplete =
+      index < parsedText.length &&
+      parsedTargetText[index].tokenString == element.tokenString;
+
+    const isMostRecentTypedTokenAndIsCorrectSoFar =
+      index == parsedText.length - 1 &&
+      parsedTargetText[index].tokenString.startsWith(element.tokenString);
+
+    if (
+      isNonMostRecentTypedTokenAndIsComplete ||
+      isMostRecentTypedTokenAndIsCorrectSoFar
+    ) {
       console.log("The typed text matches the target text, so far!");
       tokenInfosOfMatchingWords.push(element);
+      // It doesn't matter that we're adding this element to the list of matching words before we've completed it (and therefore that we don't know if the user will type it correctly in full). Because it's a local variable, we recreate it each time.
     } else {
       const mismatchingPair = {
         typedToken: element,
@@ -220,6 +233,7 @@ export default function Typingbox({
           setTypedTextWithHtml(newValue);
         }}
       />
+
       <button disabled={!dateTimeEnd} onClick={submitSampleRun}>
         submit
       </button>
