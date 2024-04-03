@@ -107,3 +107,7 @@ button:focus-visible {
 .trainingToken {
   color: orange
 }
+
+form {
+  border: 1px solid white;
+}

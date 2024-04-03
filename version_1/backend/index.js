@@ -109,7 +109,6 @@ app.get("/api/sample-text", async (req, res) => {
       `Please give me a sentence, or a few sentences, on any topic. It should be about 25 to 50 words long.
     
 The paragraph should include the following words. Use each of these words at least once.
-    
 ` + stringOfTrainingTokens;
   } else {
     ourPrompt = `Please make up a short snippet of text, on any topic. It should be about 25 to 50 words long.`;

@@ -8,8 +8,8 @@ export default function TextToTypeBox({ textToType, trainingTokens }) {
     let annotatedTargetText = textToType;
     for (const token of trainingTokens) {
       annotatedTargetText = annotatedTargetText.replaceAll(
-        new RegExp(token.tokenString, "ig"),
-        `<span class="trainingToken">${token.tokenString}</span>`
+        new RegExp("(" + token.tokenString + ")", "ig"),
+        `<span class="trainingToken">$1</span>`
       );
     }
     return annotatedTargetText;

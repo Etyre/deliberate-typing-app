@@ -1,20 +1,18 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom"
-import Home from "./pages/Home"
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Home from "./pages/Home";
 
 function App() {
-
   return (
     <>
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Home></Home>} />
-        <Route path="/*" element={<h1>404 error</h1>} />
-        {/* This needs to be the very last route in this list, because it's the catch all. */}
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Home></Home>} />
+          <Route path="/*" element={<h1>404 error</h1>} />
+          {/* This needs to be the very last route in this list, because it's the catch all. */}
         </Routes>
-    </BrowserRouter>
-       
+      </BrowserRouter>
     </>
-  )
+  );
 }
 
-export default App
+export default App;

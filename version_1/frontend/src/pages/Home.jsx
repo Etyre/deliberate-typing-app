@@ -2,6 +2,8 @@ import Typingbox from "../components/Typingbox";
 import TextToTypeBox from "../components/TextToTypeBox";
 import { useEffect, useState } from "react";
 import { getTrial, sendCompletedSampleData } from "../api/api.js";
+import OptionsPanel from "../components/OptionsPanel/index.jsx";
+import NavBar from "../components/NavBar/index.jsx";
 
 export default function Home() {
   const [currentTrial, setCurrentTrial] = useState(null);
@@ -9,6 +11,11 @@ export default function Home() {
 
   const [textToType, setTextToType] = useState("");
   const [trainingTokens, setTrainingTokens] = useState([]);
+
+  /**
+   * @type {[ "TYPING"| "OPTIONS_PANEL" | "STATS",]}
+   */
+  const [activeView, setActiveView] = useState("TYPING");
 
   useEffect(() => {
     if (!currentTrial && onDeckTrial) {
@@ -39,19 +46,29 @@ export default function Home() {
   console.log(trainingTokens);
 
   return (
-    <>
-      <div className="textAndTypingContainer">
-        <TextToTypeBox
-          trainingTokens={trainingTokens}
-          textToType={textToType}
-        ></TextToTypeBox>
-        <Typingbox
-          key={textToType}
-          trainingTokens={trainingTokens}
-          targetText={textToType}
-          setCurrentTrial={setCurrentTrial}
-        ></Typingbox>
+    <div>
+      <NavBar navigationFunction={setActiveView}></NavBar>
+      <div>
+        {activeView == "TYPING" && (
+          <div className="textAndTypingContainer">
+            <TextToTypeBox
+              trainingTokens={trainingTokens}
+              textToType={textToType}
+            ></TextToTypeBox>
+            <Typingbox
+              key={textToType}
+              trainingTokens={trainingTokens}
+              targetText={textToType}
+              setCurrentTrial={setCurrentTrial}
+            ></Typingbox>
+          </div>
+        )}
+        {activeView == "OPTIONS_PANEL" && (
+          <div>
+            <OptionsPanel></OptionsPanel>
+          </div>
+        )}
       </div>
-    </>
+    </div>
   );
 }
