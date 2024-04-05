@@ -11,7 +11,7 @@ SELECT
           ON(STT."sampleId" = S."id")
             INNER JOIN "User" AS U
             ON(S."userId" = U."id")
-    GROUP BY
+    GROUP BY 
       U."id", TT."id", TT."tokenString"
     ORDER BY 
       "missRatio" DESC

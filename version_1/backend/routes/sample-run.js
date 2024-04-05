@@ -66,6 +66,13 @@ router.post("/api/sample-run", async (req, res) => {
       numberOfTargetCharacters: targetText.length,
       numberOfTargetWords: arrayOfTokenInfosOfSampleText.length,
 
+      trialDisplayMode: user.trialDisplayMode,
+      trainingTokenSourcing: user.trainingTokenSourcing,
+      batchSize: user.batchSize,
+      trainingAlgorithm: user.trainingAlgorithm,
+      tokenHighlighting: user.tokenHighlighting,
+      tokenHighlightingThreshold: user.tokenHighlightingThreshold,
+
       // missedWords: missedWords,
       numberOfMissedWords: missedWords.length,
     },

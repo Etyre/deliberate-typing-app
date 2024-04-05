@@ -20,13 +20,51 @@ model User {
   emailAddress String?
   hasPaid      Boolean
 
+  // User's current settings
+  trialDisplayMode           TrialDisplayMode      @default(VISUAL)
+  trainingTokenSourcing      TrainingTokenSourcing @default(MANUAL_LIST)
+  batchSize                  Int                   @default(4)
+  trainingAlgorithm          TrainingAlgorithm     @default(STRICT_WORST_SCORING_FIRST)
+  tokenHighlighting          TokenHighlighting     @default(CURRENT_TRAINING_TOKENS)
+  tokenHighlightingThreshold Int?
+
+  // Link to all the user's sample-runs
   samples Sample[]
+}
+
+enum TrialDisplayMode {
+  VISUAL
+  AUDIO
+}
+
+enum TrainingTokenSourcing {
+  ALL_TRACKED_TOKENS
+  MANUAL_LIST
+}
+
+enum TrainingAlgorithm {
+  DELIBERATE_PRACTICE
+  STRICT_WORST_SCORING_FIRST
+}
+
+enum TokenHighlighting {
+  CURRENT_TRAINING_TOKENS
+  ALL_TRACKED_TOKENS
+  TRACKED_TOKENS_ABOVE_THRESHOLD
+  NO_HIGHLIGHTING
 }
 
 model Sample {
   id     Int  @id @default(autoincrement())
   userId Int
   user   User @relation(fields: [userId], references: [id])
+
+  trialDisplayMode           TrialDisplayMode
+  trainingTokenSourcing      TrainingTokenSourcing
+  batchSize                  Int
+  trainingAlgorithm          TrainingAlgorithm
+  tokenHighlighting          TokenHighlighting
+  tokenHighlightingThreshold Int?
 
   dateTimeStart            DateTime
   dateTimeEnd              DateTime
@@ -42,11 +80,17 @@ model Sample {
 }
 
 model TrackedToken {
-  id          Int    @id @default(autoincrement())
-  tokenString String @unique
+  id                   Int     @id @default(autoincrement())
+  tokenString          String  @unique
+  inPersonalizedCorpus Boolean @default(false)
 
   sampleTrackedTokens  SampleTrackedToken[]
   sampleTrainingTokens SampleTrainingToken[]
+}
+
+enum TrackedTokenSource {
+  MISSED_IN_PRACTICE
+  ADDED_FROM_PERSONAL_CORPUS
 }
 
 // After a word is missed for the first time it is added to tracked tokens. Ever after, we track the number of hits and misses of that token.
