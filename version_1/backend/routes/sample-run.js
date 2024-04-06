@@ -36,6 +36,7 @@ function parseText(text) {
 
 // This whole thing is the code that takes the results of a sample-run, sent from the front end in json format, and saves in the database.
 router.post("/api/sample-run", async (req, res) => {
+  const trial = req.body.sampleData.trialData;
   const dateTimeStart = new Date(req.body.sampleData.dateTimeStart);
   const dateTimeEnd = new Date(req.body.sampleData.dateTimeEnd);
   const targetText = req.body.sampleData.targetText;
@@ -44,6 +45,8 @@ router.post("/api/sample-run", async (req, res) => {
   const missedWords = missedWordsRaw.map((word) => {
     return { ...word, tokenString: word.tokenString.toLocaleLowerCase() };
   });
+
+  const userSettings = trial.userSettings;
   const user = await getCurrentUser();
   const arrayOfTokenInfosOfSampleTextRaw = parseText(targetText);
   const arrayOfTokenInfosOfSampleText = arrayOfTokenInfosOfSampleTextRaw.map(
@@ -66,12 +69,12 @@ router.post("/api/sample-run", async (req, res) => {
       numberOfTargetCharacters: targetText.length,
       numberOfTargetWords: arrayOfTokenInfosOfSampleText.length,
 
-      trialDisplayMode: user.trialDisplayMode,
-      trainingTokenSourcing: user.trainingTokenSourcing,
-      batchSize: user.batchSize,
-      trainingAlgorithm: user.trainingAlgorithm,
-      tokenHighlighting: user.tokenHighlighting,
-      tokenHighlightingThreshold: user.tokenHighlightingThreshold,
+      trialDisplayMode: userSettings.trialDisplayMode,
+      trainingTokenSourcing: userSettings.trainingTokenSourcing,
+      batchSize: userSettings.batchSize,
+      trainingAlgorithm: userSettings.trainingAlgorithm,
+      tokenHighlighting: userSettings.tokenHighlighting,
+      tokenHighlightingThreshold: userSettings.tokenHighlightingThreshold,
 
       // missedWords: missedWords,
       numberOfMissedWords: missedWords.length,

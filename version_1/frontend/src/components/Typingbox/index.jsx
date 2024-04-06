@@ -95,6 +95,7 @@ function textContentFromHtmlString(htmlString) {
 export default function Typingbox({
   targetText,
   trainingTokens,
+  currentTrial,
   setCurrentTrial,
 }) {
   // An alternative way to write this line:
@@ -206,8 +207,8 @@ export default function Typingbox({
 
   async function submitSampleRun() {
     if (dateTimeEnd) {
-      setCurrentTrial(null);
       const data = {
+        trialData: currentTrial,
         dateTimeStart: dateTimeStart,
         dateTimeEnd: dateTimeEnd,
         targetText: targetText,
@@ -215,6 +216,7 @@ export default function Typingbox({
         missedWords: mistypedTokensInfos,
       };
       await sendCompletedSampleData(data);
+      setCurrentTrial(null);
     }
   }
 

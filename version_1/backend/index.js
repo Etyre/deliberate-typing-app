@@ -8,6 +8,8 @@ import { config } from "dotenv";
 import sampleRunRouter from "./routes/sample-run.js";
 import authenticationRouter from "./routes/authentication.js";
 import { getCurrentUser } from "./utils/authentication-utils.js";
+import UserDto from "./dtos/user-dto.js";
+import UserSettingsDto from "./dtos/user-settings-dto.js";
 
 config();
 
@@ -57,7 +59,7 @@ function parseText(text) {
   return arrayOfTokenInfos;
 }
 
-async function getSample(prompt) {
+async function getTrial(prompt) {
   return await openAiApi(prompt);
 }
 
@@ -94,8 +96,8 @@ async function getMostMissedTokens(n, userId) {
 }
 
 app.get("/api/sample-text", async (req, res) => {
-  const currentUser = await getCurrentUser();
-  const trainingTokens = await getMostMissedTokens(4, currentUser.id);
+  const rawCurrentUser = await getCurrentUser();
+  const trainingTokens = await getMostMissedTokens(4, rawCurrentUser.id);
 
   const stringOfTrainingTokens = trainingTokens
     .map((token) => {
@@ -114,9 +116,15 @@ The paragraph should include the following words. Use each of these words at lea
     ourPrompt = `Please make up a short snippet of text, on any topic. It should be about 25 to 50 words long.`;
   }
 
-  const sample = await getSample(ourPrompt);
+  const sample = await getTrial(ourPrompt);
+  const userSettings = new UserSettingsDto(rawCurrentUser);
+
   console.log(ourPrompt);
-  res.send({ targetText: sample, trainingTokens: trainingTokens });
+  res.send({
+    targetText: sample,
+    trainingTokens: trainingTokens,
+    userSettings: userSettings,
+  });
 });
 
 app.listen(port, () => {

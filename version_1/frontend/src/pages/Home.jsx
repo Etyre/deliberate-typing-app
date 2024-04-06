@@ -17,14 +17,28 @@ export default function Home() {
    */
   const [activeView, setActiveView] = useState("TYPING");
 
+  // If any of the following user settings change, we set both the current and the onDeck trial to null, which triggers a cascade of API calls to produce a new trial in the UX.
+  // useEffect(() => {
+  //   setCurrentTrial(null);
+  //   setOnDeckTrial(null);
+  // }, [
+  //   currentTrial.userSettings.trialDisplayMode,
+  //   currentTrial.userSettings.trainingTokenSouring,
+  //   currentTrial.userSettings.batchSize,
+  //   currentTrial.userSettings.trainingAlogorithm,
+  // ]);
+
+  // If the current trial is set to null, we move up the onDeck trial into the currentTrial position, and set onDeckTrial to null.
+  // Setting the current trial to null is the way that we trigger the cascade.
   useEffect(() => {
     if (!currentTrial && onDeckTrial) {
+      // this line /\ is for ordering. It's basically saying "wait until we have a new on deck trial, before running the following code."
       setCurrentTrial(onDeckTrial);
       setOnDeckTrial(null);
     }
   }, [currentTrial, onDeckTrial]);
-  // Sometimes we do something (currently with a button), that sets currentTrial to null, to start this cascade.
 
+  // When the onDeckTrial is null, we get a new one.
   useEffect(() => {
     async function getTrialForOnDeck() {
       if (!onDeckTrial) {
@@ -35,6 +49,7 @@ export default function Home() {
     getTrialForOnDeck();
   }, [onDeckTrial]);
 
+  // When we get a new currentTrial, we update the UI.
   useEffect(() => {
     if (currentTrial) {
       setTextToType(currentTrial.targetText);
@@ -59,6 +74,7 @@ export default function Home() {
               key={textToType}
               trainingTokens={trainingTokens}
               targetText={textToType}
+              currentTrial={currentTrial}
               setCurrentTrial={setCurrentTrial}
             ></Typingbox>
           </div>

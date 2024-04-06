@@ -9,6 +9,7 @@ export async function getTrial() {
 // To send the data from a completed sample run to the backend
 
 export async function sendCompletedSampleData({
+  trialData,
   dateTimeStart,
   dateTimeEnd,
   targetText,
@@ -20,6 +21,7 @@ export async function sendCompletedSampleData({
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       sampleData: {
+        trialData: trialData,
         dateTimeStart: dateTimeStart,
         dateTimeEnd: dateTimeEnd,
         targetText: targetText,
