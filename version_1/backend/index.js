@@ -10,6 +10,7 @@ import authenticationRouter from "./routes/authentication.js";
 import { getCurrentUser } from "./utils/authentication-utils.js";
 import UserDto from "./dtos/user-dto.js";
 import UserSettingsDto from "./dtos/user-settings-dto.js";
+import settingsRouter from "./routes/settings.js";
 
 config();
 
@@ -30,6 +31,8 @@ app.use(express.json());
 app.use(sampleRunRouter);
 
 app.use(authenticationRouter);
+
+app.use(settingsRouter);
 
 function parseText(text) {
   const theWordAndPunctIterator = text.matchAll(/[\w']+|[^\w\s']/g);

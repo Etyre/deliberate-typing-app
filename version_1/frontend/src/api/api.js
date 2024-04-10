@@ -32,3 +32,26 @@ export async function sendCompletedSampleData({
   });
   return true;
 }
+
+export async function saveSettings({
+  trialDisplayMode,
+  trainingTokenSourcing,
+  batchSize,
+  trainingAlgorithm,
+  tokenHighlighting,
+  tokenHighlightingThreshold,
+}) {
+  const response = await fetch("http://localhost:5173/api/settings", {
+    method: "put",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      trialDisplayMode: trialDisplayMode,
+      trainingTokenSourcing: trainingTokenSourcing,
+      batchSize: batchSize,
+      trainingAlgorithm: trainingAlgorithm,
+      tokenHighlighting: tokenHighlighting,
+      tokenHighlightingThreshold: tokenHighlightingThreshold,
+    }),
+  });
+  return await response.json();
+}
