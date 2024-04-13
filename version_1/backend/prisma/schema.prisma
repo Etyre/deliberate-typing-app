@@ -17,7 +17,7 @@ model User {
   id           Int     @id @default(autoincrement())
   username     String?
   passwordHash String?
-  emailAddress String?
+  emailAddress String? @unique
   hasPaid      Boolean
 
   // User's current settings

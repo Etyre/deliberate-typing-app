@@ -55,3 +55,18 @@ export async function saveSettings({
   });
   return await response.json();
 }
+
+export async function signUp({ email, password }) {
+  const response = await fetch("http://localhost:5173/api/signup", {
+    method: "post",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      newUserData: {
+        newUserEmail: email,
+        newUserPassword: password,
+      },
+    }),
+  });
+  console.log(response);
+  return true;
+}

@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useMemo } from "react";
-import { saveSettings } from "../../api/api";
+import { saveSettings } from "../api/api";
 
 /**
  *
@@ -30,7 +30,7 @@ export default function OptionsPanel({ currentTrialSettings }) {
   ]);
 
   return (
-    <form className="settingPanel">
+    <form className="settingsPanel">
       <h1>Settings</h1>
       <div>
         <h3>Display Mode [not yet functional]</h3>

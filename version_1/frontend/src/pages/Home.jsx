@@ -1,9 +1,9 @@
-import Typingbox from "../components/Typingbox";
-import TextToTypeBox from "../components/TextToTypeBox";
+import Typingbox from "../components/Typingbox.jsx";
+import TextToTypeBox from "../components/TextToTypeBox.jsx";
 import { useEffect, useState } from "react";
 import { getTrial, sendCompletedSampleData } from "../api/api.js";
-import OptionsPanel from "../components/OptionsPanel/index.jsx";
-import NavBar from "../components/NavBar/index.jsx";
+import OptionsPanel from "../components/SettingsPanel.jsx";
+import NavBar from "../components/NavBar.jsx";
 
 export default function Home() {
   const [currentTrial, setCurrentTrial] = useState(null);

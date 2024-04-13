@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useMemo } from "react";
-import ContentEditable from "../ContentEditable";
-import { sendCompletedSampleData } from "../../api/api";
+import ContentEditable from "./ContentEditable";
+import { sendCompletedSampleData } from "../api/api";
 
 /**
  * @param {string} text
