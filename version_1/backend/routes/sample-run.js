@@ -47,7 +47,7 @@ router.post("/api/sample-run", async (req, res) => {
   });
 
   const userSettings = trial.userSettings;
-  const user = await getCurrentUser();
+  const user = await getCurrentUser(req, res);
   const arrayOfTokenInfosOfSampleTextRaw = parseText(targetText);
   const arrayOfTokenInfosOfSampleText = arrayOfTokenInfosOfSampleTextRaw.map(
     (token) => {

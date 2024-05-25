@@ -102,7 +102,7 @@ async function getMostMissedTokens(n, userId) {
 }
 
 app.get("/api/sample-text", async (req, res) => {
-  const rawCurrentUser = await getCurrentUser(req);
+  const rawCurrentUser = await getCurrentUser(req, res);
   const trainingTokens = await getMostMissedTokens(4, rawCurrentUser.id);
 
   const stringOfTrainingTokens = trainingTokens

@@ -18,7 +18,7 @@ function isUserLoggedIn(req) {
   return true;
 }
 
-export async function getCurrentUser(req) {
+export async function getCurrentUser(req, res) {
   if (isUserLoggedIn(req)) {
     const token = req.header("authorization").split("Bearer ")[1];
 
@@ -28,10 +28,9 @@ export async function getCurrentUser(req) {
     );
 
     const user = await prisma.user.findFirst({ where: { id: decoded.id } });
-    // currently, this is just getting the first user in the table. In the future, after we have a way to check which user is logged in, we'll want to get that specific user instead.
     return user;
   } else {
-    return await prisma.user.create({
+    const newUser = await prisma.user.create({
       data: {
         username: null,
         passwordHash: null,
@@ -40,6 +39,16 @@ export async function getCurrentUser(req) {
         hasPaid: false,
       },
     });
+    const webToken = jsonwebtoken.sign(
+      { id: newUser.id },
+      readFileSync("./secrets/jwtRS256.key"),
+      {
+        algorithm: "RS256",
+      }
+    );
+
+    res.cookie(cookieName, webToken);
+    return newUser;
   }
 }
 

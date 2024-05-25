@@ -14,7 +14,7 @@ const prisma = new PrismaClient();
 const router = Router();
 
 router.get("/api/user", async (req, res) => {
-  const rawUser = await getCurrentUser(req);
+  const rawUser = await getCurrentUser(req, res);
   const user = new UserDto(rawUser);
   res.send(user);
 });

@@ -2,6 +2,9 @@
 export async function getTrial() {
   const response = await fetch("http://localhost:5173/api/sample-text", {
     method: "get",
+    headers: {
+      authorization: `Bearer ${getCookie("authToken") || ""}`,
+    },
   });
   return await response.json();
 }
@@ -26,7 +29,10 @@ export async function sendCompletedSampleData({
 }) {
   const response = await fetch("http://localhost:5173/api/sample-run", {
     method: "post",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      authorization: `Bearer ${getCookie("authToken") || ""}`,
+    },
     body: JSON.stringify({
       sampleData: {
         trialData: trialData,
@@ -51,7 +57,10 @@ export async function saveSettings({
 }) {
   const response = await fetch("http://localhost:5173/api/settings", {
     method: "put",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      authorization: `Bearer ${getCookie("authToken") || ""}`,
+    },
     body: JSON.stringify({
       trialDisplayMode: trialDisplayMode,
       trainingTokenSourcing: trainingTokenSourcing,
@@ -67,7 +76,10 @@ export async function saveSettings({
 export async function signUp({ email, password, confirmPassword }) {
   const response = await fetch("http://localhost:5173/api/signup", {
     method: "post",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      authorization: `Bearer ${getCookie("authToken") || ""}`,
+    },
     body: JSON.stringify({
       newUserData: {
         email: email,
@@ -86,7 +98,10 @@ export async function signUp({ email, password, confirmPassword }) {
 export async function login({ email, password }) {
   const response = await fetch("http://localhost:5173/api/login", {
     method: "post",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      authorization: `Bearer ${getCookie("authToken") || ""}`,
+    },
     body: JSON.stringify({
       loginData: {
         email: email,
