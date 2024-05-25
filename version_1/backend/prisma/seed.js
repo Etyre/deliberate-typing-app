@@ -14,9 +14,9 @@ const prisma = new PrismaClient();
 
 await prisma.user.create({
   data: {
-    id: 1,
     username: "test user",
-    passwordHash: null,
+    passwordHash: "test",
+    passwordSalt: "test",
     emailAddress: "elityre@gmail.com",
     hasPaid: false,
   },

@@ -2,18 +2,33 @@ import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import NavBar from "../components/NavBar";
 import { signUp } from "../api/api";
-
-async function submitForm(e, formData) {
-  e.preventDefault();
-  const email = formData.emailAddress;
-  const password = formData.password;
-  const confirmPassword = formData.confirmPassword;
-
-  signUp({ email, password });
-}
+import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../contexts/AuthContext";
+import { useContext } from "react";
 
 export default function SignUp(props) {
   const [formData, setFormData] = useState({});
+  const [signUpErrors, setSignUpErrors] = useState([]);
+  const navigate = useNavigate();
+  const { setLoggedInUser, loggedInUser } = useContext(AuthContext);
+
+  async function submitForm(e, formData) {
+    e.preventDefault();
+    const email = formData.emailAddress;
+    const password = formData.password;
+    const confirmPassword = formData.confirmPassword;
+
+    setSignUpErrors([]);
+    try {
+      setLoggedInUser(await signUp({ email, password, confirmPassword }));
+    } catch (errors) {
+      console.log(errors);
+      setSignUpErrors(errors);
+      return;
+    }
+    console.log("sign up successful");
+    navigate("/");
+  }
 
   return (
     <div className="sign-up">
@@ -21,7 +36,7 @@ export default function SignUp(props) {
         <Link to="/">Back to typing</Link>
       </div>
       <form
-        onSubmit={(e) => {
+        onSubmit={async (e) => {
           submitForm(e, formData);
         }}
       >
@@ -38,7 +53,13 @@ export default function SignUp(props) {
             }));
           }}
         />
-        <br />
+        <div className="input-field-error">
+          {
+            signUpErrors.find((x) => {
+              return x.associatedInputField == "emailAddress";
+            })?.errorMessage
+          }
+        </div>
         password or passphrase:
         <br />
         <input
@@ -66,6 +87,13 @@ export default function SignUp(props) {
             }));
           }}
         />
+        <div className="input-field-error">
+          {
+            signUpErrors.find((x) => {
+              return x.associatedInputField == "confirmPassword";
+            })?.errorMessage
+          }
+        </div>
         <br />
         <button>Submit</button>
         <br />

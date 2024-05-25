@@ -1,14 +1,33 @@
 import { PrismaClient } from "@prisma/client";
+import crypto from "crypto";
+import { read, readFileSync } from "fs";
+import jsonwebtoken from "jsonwebtoken";
+import InputError from "./input-error.js";
 
 const prisma = new PrismaClient();
 
-function isUserLoggedIn() {
+const cookieName = "authToken";
+
+function isUserLoggedIn(req) {
+  if (
+    !req.header("authorization") ||
+    !req.header("authorization").split("Bearer ")[1]
+  ) {
+    return false;
+  }
   return true;
 }
 
-export async function getCurrentUser() {
-  if (isUserLoggedIn()) {
-    const user = await prisma.user.findFirst();
+export async function getCurrentUser(req) {
+  if (isUserLoggedIn(req)) {
+    const token = req.header("authorization").split("Bearer ")[1];
+
+    const decoded = jsonwebtoken.verify(
+      token,
+      readFileSync("./secrets/jwtRS256.key")
+    );
+
+    const user = await prisma.user.findFirst({ where: { id: decoded.id } });
     // currently, this is just getting the first user in the table. In the future, after we have a way to check which user is logged in, we'll want to get that specific user instead.
     return user;
   } else {
@@ -17,8 +36,56 @@ export async function getCurrentUser() {
         username: null,
         passwordHash: null,
         emailAddress: null,
+        passwordSalt: null,
         hasPaid: false,
       },
     });
   }
+}
+
+export async function authenticateUser(email, givenPassword, res) {
+  // Check if that user is in there.
+  const user = await prisma.user.findFirst({ where: { emailAddress: email } });
+  if (!user) {
+    throw new InputError("There's no account with this email.", "emailAddress");
+  }
+
+  const salt = user.passwordSalt;
+
+  const newlyGeneratedHash = crypto
+    .pbkdf2Sync(givenPassword, salt, 1000, 64, `sha512`)
+    .toString(`hex`);
+
+  if (user.passwordHash != newlyGeneratedHash) {
+    throw new InputError(
+      "This is not the correct password for this account.",
+      "password"
+    );
+  }
+
+  const webToken = jsonwebtoken.sign(
+    { id: user.id },
+    readFileSync("./secrets/jwtRS256.key"),
+    {
+      algorithm: "RS256",
+    }
+  );
+
+  res.cookie(cookieName, webToken);
+}
+
+export function hashPassword(unhashedPassword) {
+  // Creating a unique salt for a particular user
+  const salt = crypto.randomBytes(16).toString("hex");
+
+  // Hashing user's salt and password with 1000 iterations, 64 length and sha512 digest
+  const hash = crypto
+    .pbkdf2Sync(unhashedPassword, salt, 1000, 64, `sha512`)
+    .toString(`hex`);
+
+  return { salt: salt, hash: hash };
+}
+
+export async function logOut(res) {
+  res.clearCookie(cookieName);
 }

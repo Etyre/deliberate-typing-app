@@ -30,7 +30,7 @@ It does three things:
 
 ### Run SQL commands
 
-To open up an interactive terminal that access the container (always do this one first):
+To open up an interactive terminal that accesses the container (always do this one first):
 
 ```
 docker exec -it eli-postgres psql -U elityre -d deliberate_typing_app

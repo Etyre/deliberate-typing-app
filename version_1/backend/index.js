@@ -11,6 +11,7 @@ import { getCurrentUser } from "./utils/authentication-utils.js";
 import UserDto from "./dtos/user-dto.js";
 import UserSettingsDto from "./dtos/user-settings-dto.js";
 import settingsRouter from "./routes/settings.js";
+import cookieParser from "cookie-parser";
 
 config();
 
@@ -27,6 +28,8 @@ app.use("/", express.static(path.join(__dirname, "../frontend/dist")));
 // This doesn't seem to work with "get", even though when we use "use", that uses a get requset. It seems to work with "use" though ¯\_(ツ)_/¯.
 
 app.use(express.json());
+
+app.use(cookieParser());
 
 app.use(sampleRunRouter);
 
@@ -99,7 +102,7 @@ async function getMostMissedTokens(n, userId) {
 }
 
 app.get("/api/sample-text", async (req, res) => {
-  const rawCurrentUser = await getCurrentUser();
+  const rawCurrentUser = await getCurrentUser(req);
   const trainingTokens = await getMostMissedTokens(4, rawCurrentUser.id);
 
   const stringOfTrainingTokens = trainingTokens
@@ -128,6 +131,11 @@ The paragraph should include the following words. Use each of these words at lea
     trainingTokens: trainingTokens,
     userSettings: userSettings,
   });
+});
+
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send({ message: "Something broke!" });
 });
 
 app.listen(port, () => {

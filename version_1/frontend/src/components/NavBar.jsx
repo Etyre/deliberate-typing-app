@@ -1,7 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
+import { AuthContext } from "../contexts/AuthContext";
+import { useContext } from "react";
+import { logout } from "../api/api";
 
 export default function NavBar(props) {
+  const { loggedInUser, setLoggedInUser } = useContext(AuthContext);
+
   return (
     <div className="nav-bar">
       <button
@@ -19,7 +24,29 @@ export default function NavBar(props) {
         Settings
       </button>
       <button>Stats</button>
-      <Link to={"/login"}>Login</Link>
+      {loggedInUser ? (
+        <div className="current-user-display">
+          {loggedInUser.username}
+          <button
+            onClick={() => {
+              logout();
+              setLoggedInUser(null);
+            }}
+          >
+            Logout
+          </button>
+        </div>
+      ) : (
+        <div className={"login-and-signup-link"}>
+          <Link to={"/login"} className={"login-link"}>
+            Log in
+          </Link>{" "}
+          /{" "}
+          <Link to={"/signup"} className={"signin-button"}>
+            Sign up
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

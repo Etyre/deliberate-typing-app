@@ -121,3 +121,16 @@ form {
   display: flex;
   margin-bottom: 3px;
 }
+
+.login-and-signup-link {
+  margin-left: auto;
+}
+
+.login-link {
+  margin-left: auto;
+}
+
+.input-field-error {
+  font-size: 0.5em;
+  color: red
+}
