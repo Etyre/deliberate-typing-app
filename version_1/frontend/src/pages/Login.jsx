@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 export default function Login(props) {
   const [formData, setFormData] = useState({});
   const [loginErrors, setLoginErrors] = useState([]);
-  const { setLoggedInUser, loggedInUser } = useContext(AuthContext);
+  const { setCurrentUser, currentUser } = useContext(AuthContext);
   const navigate = useNavigate();
 
   async function submitForm(e, formData) {
@@ -16,7 +16,7 @@ export default function Login(props) {
     const email = formData.emailAddress;
     const password = formData.password;
     try {
-      setLoggedInUser(await login({ email, password }));
+      setCurrentUser(await login({ email, password }));
     } catch (errors) {
       if (!Array.isArray(errors)) {
         throw errors;

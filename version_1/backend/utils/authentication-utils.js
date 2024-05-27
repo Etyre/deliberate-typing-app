@@ -28,6 +28,9 @@ export async function getCurrentUser(req, res) {
     );
 
     const user = await prisma.user.findFirst({ where: { id: decoded.id } });
+    if (!user) {
+      throw new Error("Invalid auth token.");
+    }
     return user;
   } else {
     const newUser = await prisma.user.create({

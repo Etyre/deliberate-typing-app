@@ -31,7 +31,7 @@ export default function OptionsPanel({ currentTrialSettings }) {
 
   return (
     <form className="settingsPanel">
-      <h1>Settings</h1>
+      <h2>Settings</h2>
       <div>
         <h3>Display Mode [not yet functional]</h3>
         <p>Should the text to be typed be shown to you or read aloud to you?</p>
@@ -93,7 +93,7 @@ export default function OptionsPanel({ currentTrialSettings }) {
                 }));
               }}
             />
-            All history (words that you've missed in the past)
+            All history (words that you've missed in the past, from any source)
           </label>
         </div>
         <div>

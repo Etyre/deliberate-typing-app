@@ -1,11 +1,14 @@
 import Typingbox from "../components/Typingbox.jsx";
 import TextToTypeBox from "../components/TextToTypeBox.jsx";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { getTrial, sendCompletedSampleData } from "../api/api.js";
 import OptionsPanel from "../components/SettingsPanel.jsx";
 import NavBar from "../components/NavBar.jsx";
+import { AuthContext } from "../contexts/AuthContext";
 
 export default function Home() {
+  const { currentUser } = useContext(AuthContext);
+
   const [currentTrial, setCurrentTrial] = useState(null);
   const [onDeckTrial, setOnDeckTrial] = useState(null);
 
@@ -38,16 +41,18 @@ export default function Home() {
     }
   }, [currentTrial, onDeckTrial]);
 
-  // When the onDeckTrial is null, we get a new one.
+  // When the onDeckTrial is null, we get a new one. (We only do this if an auth token is in place. Otherwise this will produce duplicates, as we call the backend before the auth token arrives, and then call it again after the user it is.)
   useEffect(() => {
-    async function getTrialForOnDeck() {
-      if (!onDeckTrial) {
-        const trial = await getTrial();
-        setOnDeckTrial(trial);
+    if (currentUser) {
+      async function getTrialForOnDeck() {
+        if (!onDeckTrial) {
+          const trial = await getTrial();
+          setOnDeckTrial(trial);
+        }
       }
+      getTrialForOnDeck();
     }
-    getTrialForOnDeck();
-  }, [onDeckTrial]);
+  }, [onDeckTrial, currentUser]);
 
   // When we get a new currentTrial, we update the UI.
   useEffect(() => {

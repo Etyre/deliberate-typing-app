@@ -103,6 +103,7 @@ async function getMostMissedTokens(n, userId) {
 
 app.get("/api/sample-text", async (req, res) => {
   const rawCurrentUser = await getCurrentUser(req, res);
+  console.log("rawCurrentUser: ", rawCurrentUser);
   const trainingTokens = await getMostMissedTokens(4, rawCurrentUser.id);
 
   const stringOfTrainingTokens = trainingTokens
@@ -135,7 +136,11 @@ The paragraph should include the following words. Use each of these words at lea
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).send({ message: "Something broke!" });
+  res
+    .status(500)
+    .send({
+      message: "Something broke! Check the backend terminal for more info.",
+    });
 });
 
 app.listen(port, () => {

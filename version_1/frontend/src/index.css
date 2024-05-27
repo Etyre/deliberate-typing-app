@@ -134,3 +134,22 @@ form {
   font-size: 0.5em;
   color: red
 }
+
+.current-user-display {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.9em;
+  margin-left: auto;
+}
+
+.logout-button {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #646cff;
+  cursor: pointer;
+  font: inherit;
+  text-align: right;
+  font-size: 0.9em;
+
+}

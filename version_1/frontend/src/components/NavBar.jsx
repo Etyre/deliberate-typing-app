@@ -5,7 +5,7 @@ import { useContext } from "react";
 import { logout } from "../api/api";
 
 export default function NavBar(props) {
-  const { loggedInUser, setLoggedInUser, isAnonUser } = useContext(AuthContext);
+  const { currentUser, setCurrentUser, isAnonUser } = useContext(AuthContext);
 
   console.log("isAnonUser: ", isAnonUser);
   return (
@@ -25,13 +25,14 @@ export default function NavBar(props) {
         Settings
       </button>
       <button>Stats</button>
-      {loggedInUser && !isAnonUser ? (
+      {currentUser && !isAnonUser ? (
         <div className="current-user-display">
-          {loggedInUser.username}
+          {currentUser.username}
           <button
+            className="logout-button"
             onClick={() => {
               logout();
-              setLoggedInUser(null);
+              setCurrentUser(null);
             }}
           >
             Logout

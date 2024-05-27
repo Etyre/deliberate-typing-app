@@ -6,42 +6,42 @@ export const AuthContext = createContext();
 
 // Create the AuthContextProvider component
 export const AuthContextProvider = ({ children }) => {
-  const [loggedInUser, setLoggedInUser] = useState(null);
-  console.log("loggedInUser: ", loggedInUser);
+  const [currentUser, setCurrentUser] = useState(null);
+  console.log("currentUser: ", currentUser);
 
   useEffect(() => {
     (async () => {
       const user = await getLoggedInUserFromToken();
       console.log("user: ", user);
-      setLoggedInUser(user);
+      setCurrentUser(user);
     })();
   }, []);
 
   //   useEffect(() => {
-  //     if (loggedInUser == null) {
+  //     if (currentUser == null) {
   //       setIsAnonUser(true);
   //     }
-  //     if (loggedInUser.username == null) {
+  //     if (currentUser.username == null) {
   //       setIsAnonUser(true);
   //     } else {
   //       setIsAnonUser(false);
   //     }
-  //   }, [loggedInUser]);
+  //   }, [currentUser]);
 
   const isAnonUser = useMemo(() => {
-    if (loggedInUser == null) {
+    if (currentUser == null) {
       return true;
     }
-    if (loggedInUser.username == null) {
+    if (currentUser.username == null) {
       return true;
     } else {
       return false;
     }
-  }, [loggedInUser]);
+  }, [currentUser]);
 
   // Render the AuthContextProvider with the provided value
   return (
-    <AuthContext.Provider value={{ loggedInUser, setLoggedInUser, isAnonUser }}>
+    <AuthContext.Provider value={{ currentUser, setCurrentUser, isAnonUser }}>
       {children}
     </AuthContext.Provider>
   );

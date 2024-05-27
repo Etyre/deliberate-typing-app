@@ -21,6 +21,14 @@ router.get("/api/user", async (req, res) => {
 
 router.post("/api/signup", async (req, res) => {
   const newUserData = req.body.newUserData;
+  const anonUser = await getCurrentUser(req, res);
+
+  if (anonUser.username) {
+    res.status(400).send({
+      message: "You are already logged in. Please log out first.",
+    });
+    return;
+  }
 
   let errors = [];
   //   check 1: is the given email already in the database?
@@ -67,7 +75,8 @@ router.post("/api/signup", async (req, res) => {
 
   const { hash, salt } = hashPassword(newUserData.password);
 
-  const newUser = await prisma.user.create({
+  const newUser = await prisma.user.update({
+    where: { id: anonUser.id },
     data: {
       emailAddress: newUserData.email,
       username: newUserData.email,
