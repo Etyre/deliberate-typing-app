@@ -25,7 +25,7 @@ const app = express();
 const port = 3000;
 
 app.use("/", express.static(path.join(__dirname, "../frontend/dist")));
-// This doesn't seem to work with "get", even though when we use "use", that uses a get requset. It seems to work with "use" though ¯\_(ツ)_/¯.
+// This doesn't seem to work with "get", even though when we use "use", that uses a get request. It seems to work with "use" though ¯\_(ツ)_/¯.
 
 app.use(express.json());
 
@@ -136,11 +136,9 @@ The paragraph should include the following words. Use each of these words at lea
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res
-    .status(500)
-    .send({
-      message: "Something broke! Check the backend terminal for more info.",
-    });
+  res.status(500).send({
+    message: "Something broke! Check the backend terminal for more info.",
+  });
 });
 
 app.listen(port, () => {

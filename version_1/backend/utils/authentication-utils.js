@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 
 const cookieName = "authToken";
 
-function isUserLoggedIn(req) {
+function isUserAuthenticated(req) {
   if (
     !req.header("authorization") ||
     !req.header("authorization").split("Bearer ")[1]
@@ -19,7 +19,7 @@ function isUserLoggedIn(req) {
 }
 
 export async function getCurrentUser(req, res) {
-  if (isUserLoggedIn(req)) {
+  if (isUserAuthenticated(req)) {
     const token = req.header("authorization").split("Bearer ")[1];
 
     const decoded = jsonwebtoken.verify(

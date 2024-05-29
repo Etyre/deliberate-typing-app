@@ -1,5 +1,6 @@
-import { useEffect, useState, useRef, useMemo } from "react";
+import { useEffect, useState, useRef, useMemo, useContext } from "react";
 import { saveSettings } from "../api/api";
+import { AuthContext } from "../contexts/AuthContext";
 
 /**
  *
@@ -12,8 +13,10 @@ import { saveSettings } from "../api/api";
  * tokenHighlightingThreshold: number | null}}} props
  */
 
-export default function OptionsPanel({ currentTrialSettings }) {
-  const [formSettings, setFormSettings] = useState({ ...currentTrialSettings });
+export default function OptionsPanel() {
+  const { settings } = useContext(AuthContext);
+
+  const [formSettings, setFormSettings] = useState({ ...settings });
 
   useEffect(() => {
     if (!formSettings) {
@@ -138,7 +141,7 @@ export default function OptionsPanel({ currentTrialSettings }) {
               max="10"
               value={formSettings.batchSize}
               onChange={(e) => {
-                const newValue = e.target.value;
+                const newValue = Number(e.target.value);
                 setFormSettings((formSettings) => ({
                   ...formSettings,
                   batchSize: newValue,

@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 const router = Router();
 
 router.put("/api/settings", async (req, res) => {
-  const rawUser = await getCurrentUser();
+  const rawUser = await getCurrentUser(req, res);
 
   const hasPaid = req.body.hasPaid;
   const trialDisplayMode = req.body.trialDisplayMode;

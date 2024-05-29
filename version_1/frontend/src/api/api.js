@@ -115,7 +115,7 @@ export async function login({ email, password }) {
   return await response.json();
 }
 
-export async function getLoggedInUserFromToken() {
+export async function getCurrentUserFromToken() {
   const token = getCookie("authToken");
   const response = await fetch("http://localhost:5173/api/user", {
     method: "get",

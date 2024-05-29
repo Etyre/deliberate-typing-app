@@ -10,7 +10,7 @@ export default function SignUp(props) {
   const [formData, setFormData] = useState({});
   const [signUpErrors, setSignUpErrors] = useState([]);
   const navigate = useNavigate();
-  const { setLoggedInUser, loggedInUser } = useContext(AuthContext);
+  const { setCurrentUser, currentUser } = useContext(AuthContext);
 
   async function submitForm(e, formData) {
     e.preventDefault();
@@ -20,7 +20,7 @@ export default function SignUp(props) {
 
     setSignUpErrors([]);
     try {
-      setLoggedInUser(await signUp({ email, password, confirmPassword }));
+      setCurrentUser(await signUp({ email, password, confirmPassword }));
     } catch (errors) {
       console.log(errors);
       setSignUpErrors(errors);
