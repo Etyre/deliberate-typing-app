@@ -12,8 +12,8 @@
     "seed": "npx prisma migrate reset && node ./prisma/seed.js",
     "grant-seed-permissions": "chown prisma ./prisma/seed.js",
     "generate": "npx prisma generate",
-    "preinstall": "cd ../frontend && npm install",
-    "build": "cd ../frontend && npm run build"
+    "preinstall": "cd frontend && npm install",
+    "build": "cd frontend && npm run build"
   },
   "author": "",
   "license": "ISC",
