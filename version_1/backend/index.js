@@ -24,7 +24,7 @@ const app = express();
 
 const port = 3000;
 
-app.use("/", express.static(path.join(__dirname, "frontend/dist")));
+app.use("/", express.static(path.join(__dirname, "./frontend/dist")));
 // This doesn't seem to work with "get", even though when we use "use", that uses a get request. It seems to work with "use" though ¯\_(ツ)_/¯.
 
 app.use(express.json());
