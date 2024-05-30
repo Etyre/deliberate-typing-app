@@ -1,9 +1,20 @@
 ### Building
 
-This is the command for building the image from the Dockerfile.
+This is the script for building the image from the Dockerfile.
 
 ```
-docker build -t eli/postgres:1.0 .
+bash ./scripts/build.sh
+```
+
+That runs the following command:
+
+```
+source .env
+
+docker build -t eli/postgres:1.0 . \
+--build-arg POSTGRES_USER=$POSTGRES_USER \
+--build-arg POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
+--build-arg PORT=$PORT
 ```
 
 ### Running
