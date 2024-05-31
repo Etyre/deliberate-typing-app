@@ -52,3 +52,13 @@ To check the tables in the SQL database inside of the prisma thing:
 ```
 \dt;
 ```
+
+## Railway stuff
+
+On railway, create a volume for the whole database folder, so that we're don't overwrite the user data every time we push an update.
+
+Specifically, create a volume to the following filepath:
+
+```
+/var/lib/postgresql/data
+```

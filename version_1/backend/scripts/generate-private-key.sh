@@ -1,5 +1,4 @@
-ssh-keygen -t rsa -b 4096 -m PEM -f jwtRS256.key
+mkdir -p ./secrets
+ssh-keygen -t rsa -b 4096 -m PEM -f ./secrets/jwtRS256.key -q -N ""
 # Don't add passphrase
-openssl rsa -in jwtRS256.key -pubout -outform PEM -out jwtRS256.key.pub
-cat ./secrets/jwtRS256.key
-cat ./secrets/jwtRS256.key.pub
+openssl rsa -in ./secrets/jwtRS256.key -pubout -outform PEM -out ./secrets/jwtRS256.key.pub
