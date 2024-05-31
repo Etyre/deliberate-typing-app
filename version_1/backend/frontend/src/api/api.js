@@ -1,6 +1,6 @@
 // To get the sample text from the backend (which gets it from GPT-4), and returns the data as an object.
 export async function getTrial() {
-  const response = await fetch("http://localhost:5173/api/sample-text", {
+  const response = await fetch("/api/sample-text", {
     method: "get",
     headers: {
       authorization: `Bearer ${getCookie("authToken") || ""}`,
@@ -27,7 +27,7 @@ export async function sendCompletedSampleData({
   trainingTokens,
   missedWords,
 }) {
-  const response = await fetch("http://localhost:5173/api/sample-run", {
+  const response = await fetch("/api/sample-run", {
     method: "post",
     headers: {
       "Content-Type": "application/json",
@@ -55,7 +55,7 @@ export async function saveSettings({
   tokenHighlighting,
   tokenHighlightingThreshold,
 }) {
-  const response = await fetch("http://localhost:5173/api/settings", {
+  const response = await fetch("/api/settings", {
     method: "put",
     headers: {
       "Content-Type": "application/json",
@@ -74,7 +74,7 @@ export async function saveSettings({
 }
 
 export async function signUp({ email, password, confirmPassword }) {
-  const response = await fetch("http://localhost:5173/api/signup", {
+  const response = await fetch("/api/signup", {
     method: "post",
     headers: {
       "Content-Type": "application/json",
@@ -96,7 +96,7 @@ export async function signUp({ email, password, confirmPassword }) {
 }
 
 export async function login({ email, password }) {
-  const response = await fetch("http://localhost:5173/api/login", {
+  const response = await fetch("/api/login", {
     method: "post",
     headers: {
       "Content-Type": "application/json",
@@ -117,7 +117,7 @@ export async function login({ email, password }) {
 
 export async function getCurrentUserFromToken() {
   const token = getCookie("authToken");
-  const response = await fetch("http://localhost:5173/api/user", {
+  const response = await fetch("/api/user", {
     method: "get",
     headers: { authorization: `Bearer ${token || ""}` },
   });
@@ -130,7 +130,7 @@ export async function logout() {
   // We technically don't need this line, since the backend the backend is going to tell the frontend to remove the cookie that has the same name as the one that it sent originally.
   const token = getCookie("authToken");
 
-  const response = await fetch("http://localhost:5173/api/logout", {
+  const response = await fetch("/api/logout", {
     method: "post",
     headers: { authorization: `Bearer ${token || ""}` },
   });
