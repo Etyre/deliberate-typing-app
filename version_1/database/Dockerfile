@@ -9,4 +9,6 @@ ENV POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
 
 ENV POSTGRES_DB=deliberate_typing_app
 
+ENV PGDATA=/var/lib/postgresql/data/deliberate_typing_app
+
 EXPOSE ${PORT}
