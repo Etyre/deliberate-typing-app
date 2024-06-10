@@ -21,11 +21,16 @@ function isUserAuthenticated(req) {
 export async function getCurrentUser(req, res) {
   if (isUserAuthenticated(req)) {
     const token = req.header("authorization").split("Bearer ")[1];
-
-    const decoded = jsonwebtoken.verify(
-      token,
-      readFileSync("./secrets/jwtRS256.key")
-    );
+    let decoded = null;
+    const privateKey = readFileSync("./secrets/jwtRS256.key");
+    try {
+      decoded = jsonwebtoken.verify(token, privateKey);
+    } catch (e) {
+      if (e.name == "JsonWebTokenError") {
+        logOut(res);
+      }
+      throw e;
+    }
 
     const user = await prisma.user.findFirst({ where: { id: decoded.id } });
     if (!user) {
