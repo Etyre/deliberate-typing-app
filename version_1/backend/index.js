@@ -134,6 +134,11 @@ The paragraph should include the following words. Use each of these words at lea
   });
 });
 
+app.use("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "./frontend/dist/index.html"));
+  // This is the catch-all route. It sends the index.html file, as a default, if none of the other routes match.
+});
+
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send({
