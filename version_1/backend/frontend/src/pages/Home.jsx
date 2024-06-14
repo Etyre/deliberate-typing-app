@@ -86,9 +86,7 @@ export default function Home() {
         )}
         {activeView == "OPTIONS_PANEL" && (
           <div>
-            <OptionsPanel
-              currentTrialSettings={currentTrial.userSettings}
-            ></OptionsPanel>
+            <OptionsPanel></OptionsPanel>
           </div>
         )}
       </div>

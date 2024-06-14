@@ -19,6 +19,10 @@ export default function OptionsPanel() {
   const [formSettings, setFormSettings] = useState({ ...settings });
 
   useEffect(() => {
+    setFormSettings({ ...settings });
+  }, [settings]);
+
+  useEffect(() => {
     if (!formSettings) {
       return;
     }
@@ -32,7 +36,9 @@ export default function OptionsPanel() {
     formSettings.tokenHighlightingThreshold,
   ]);
 
-  return (
+  return settings == null ? (
+    <div>Loading...</div>
+  ) : (
     <form className="settingsPanel">
       <h2>Settings</h2>
       <div>
