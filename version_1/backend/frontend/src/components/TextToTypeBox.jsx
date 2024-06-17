@@ -1,19 +1,12 @@
+import highlightTrainingTokens from "../utils/highlighting-training-tokens.js";
+
 export default function TextToTypeBox({ textToType, trainingTokens }) {
   function handleText(event) {
     setTextToType(event.target.value);
   }
 
-  console.log(trainingTokens);
-  function highlightTrainingTokens(text, trainingTokens) {
-    let annotatedTargetText = textToType;
-    for (const token of trainingTokens) {
-      annotatedTargetText = annotatedTargetText.replaceAll(
-        new RegExp("(" + token.tokenString + ")", "ig"),
-        `<span class="trainingToken">$1</span>`
-      );
-    }
-    return annotatedTargetText;
-  }
+  console.log("trainingTokens: ", trainingTokens);
+
   const annotatedTargetText = highlightTrainingTokens(
     textToType,
     trainingTokens
