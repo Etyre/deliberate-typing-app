@@ -12,6 +12,7 @@ import UserDto from "./dtos/user-dto.js";
 import UserSettingsDto from "./dtos/user-settings-dto.js";
 import settingsRouter from "./routes/settings.js";
 import cookieParser from "cookie-parser";
+import getTrainingTokens from "./training-token-selection.js";
 
 config();
 
@@ -104,7 +105,7 @@ async function getMostMissedTokens(n, userId) {
 app.get("/api/sample-text", async (req, res) => {
   const rawCurrentUser = await getCurrentUser(req, res);
   console.log("rawCurrentUser: ", rawCurrentUser);
-  const trainingTokens = await getMostMissedTokens(4, rawCurrentUser.id);
+  const trainingTokens = await getTrainingTokens(rawCurrentUser.id);
 
   const stringOfTrainingTokens = trainingTokens
     .map((token) => {
@@ -117,7 +118,7 @@ app.get("/api/sample-text", async (req, res) => {
     ourPrompt =
       `Please give me a sentence, or a few sentences, on any topic. It should be about 25 to 50 words long.
     
-The paragraph should include the following words. Use each of these words at least once.
+The paragraph should include the following words. Use each of these words at least once, but using some of them more than once is even better.
 ` + stringOfTrainingTokens;
   } else {
     ourPrompt = `Please make up a short snippet of text, on any topic. It should be about 25 to 50 words long.`;

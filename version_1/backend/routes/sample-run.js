@@ -55,7 +55,7 @@ router.post("/api/sample-run", async (req, res) => {
     }
   );
 
-  //  TODO: We need to write some code that will take the list of missed words, and use that to update the table of Tracked Tokens, in two ways: both updating the ratios of already tracked tokens, and tracking any untracked tokens that were mised.
+  //  TODO: We need to write some code that will take the list of missed words, and use that to update the table of Tracked Tokens, in two ways: both updating the ratios of already tracked tokens, and tracking any untracked tokens that were missed.
 
   console.log("dateTimeStart: ", dateTimeStart);
   console.log("targetText: ", targetText);
