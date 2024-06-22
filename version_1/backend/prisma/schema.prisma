@@ -22,11 +22,17 @@ model User {
   hasPaid      Boolean
 
   // User's current settings
-  trialDisplayMode           TrialDisplayMode      @default(VISUAL)
-  trainingTokenSourcing      TrainingTokenSourcing @default(MANUAL_LIST)
-  batchSize                  Int                   @default(4)
-  trainingAlgorithm          TrainingAlgorithm     @default(STRICT_WORST_SCORING_FIRST)
-  tokenHighlighting          TokenHighlighting     @default(CURRENT_TRAINING_TOKENS)
+  trialDisplayMode      TrialDisplayMode      @default(VISUAL)
+  trainingTokenSourcing TrainingTokenSourcing @default(MANUAL_LIST)
+  batchSize             Int                   @default(4)
+  trainingAlgorithm     TrainingAlgorithm     @default(STRICT_WORST_SCORING_FIRST)
+  // The trainingAlgorithm is currently non-loadbearing. All the algorithm settings are currently in the ttsAlgo settings.
+
+  ttsAlgoDeliberatePractice     Boolean @default(true)
+  ttsAlgoPrioritizeLapsedTokens Boolean @default(true)
+  ttsAlgoReviewGraduatedTokens  Boolean @default(true)
+
+  tokenHighlighting          TokenHighlighting @default(CURRENT_TRAINING_TOKENS)
   tokenHighlightingThreshold Int?
 
   // Link to all the user's sample-runs

@@ -8,7 +8,10 @@ import { AuthContext } from "../contexts/AuthContext";
  * trialDisplayMode:  "VISUAL" | "AUDIO",
  * trainingTokenSourcing: "ALL_TRACKED_TOKENS" | "MANUAL_LIST",
  * batchSize: number,
- * trainingAlgorithm: "DELIBERATE_PRACTICE" | "DELIBERATE_PRACTICE_PRIORIZING_LAPSED_WORDS" | "STRICT_WORST_SCORING_FIRST",
+ * trainingAlgorithm: "DELIBERATE_PRACTICE" | "DELIBERATE_PRACTICE_PRIORITIZING_LAPSED_WORDS" | "STRICT_WORST_SCORING_FIRST",
+ * ttsAlgoDeliberatePractice: true | false,
+ * ttsAlgoPrioritizeLapsedTokens: true | false,
+ * ttsAlgoReviewGraduatedTokens: true | false,
  * tokenHighlighting: "CURRENT_TRAINING_TOKENS" | "ALL_TRACKED_TOKENS" | "TRACKED_TOKENS_ABOVE_THRESHOLD" |"NO_HIGHLIGHTING",
  * tokenHighlightingThreshold: number | null}}} props
  */
@@ -32,6 +35,9 @@ export default function OptionsPanel() {
     formSettings.trainingTokenSourcing,
     formSettings.batchSize,
     formSettings.trainingAlgorithm,
+    formSettings.ttsAlgoDeliberatePractice,
+    formSettings.ttsAlgoPrioritizeLapsedTokens,
+    formSettings.ttsAlgoReviewGraduatedTokens,
     formSettings.tokenHighlighting,
     formSettings.tokenHighlightingThreshold,
   ]);
@@ -160,47 +166,46 @@ export default function OptionsPanel() {
       {/*  */}
       <div>
         <h3>Training Alogirthm [not yet functional]</h3>
-        <p>How should the app decide which words to train?</p>
+        <p>
+          Deliberate Typing serves you particular words to practice
+          typing/spelling. The basic algorithm selects whichever words you have
+          mistyped most frequently in the past. The following features can
+          adjust that algorithm to enhance your training process.
+        </p>
         <div>
           <label>
             <input
-              type="radio"
-              name="algorithm"
-              value={"DELIBERATE_PRACTICE"}
-              checked={formSettings.trainingAlgorithm == "DELIBERATE_PRACTICE"}
+              type="checkbox"
+              name="ttsAlgoDeliberatePractice"
+              checked={formSettings.ttsAlgoDeliberatePractice == true}
               onChange={(e) => {
                 const newValue = e.target.value;
                 setFormSettings((formSettings) => ({
                   ...formSettings,
-                  trainingAlgorithm: newValue,
+                  ttsAlgoDeliberatePractice: e.target.checked,
                 }));
               }}
             />
-            Deliberate practice (Continue serving a word until you get it
-            correct 10 times in a row.)
+            Deliberate practice — Continue serving a word until you get it
+            correct 5 times in a row.
           </label>
         </div>
         <div>
           <label>
             <input
-              type="radio"
-              name="algorithm"
-              value={"DELIBERATE_PRACTICE_PRIORIZING_LAPSED_WORDS"}
-              checked={
-                formSettings.trainingAlgorithm ==
-                "DELIBERATE_PRACTICE_PRIORIZING_LAPSED_WORDS"
-              }
+              type="checkbox"
+              name="ttsAlgoPrioritizeLapsedTokens"
+              checked={formSettings.ttsAlgoPrioritizeLapsedTokens == true}
               onChange={(e) => {
                 const newValue = e.target.value;
                 setFormSettings((formSettings) => ({
                   ...formSettings,
-                  trainingAlgorithm: newValue,
+                  ttsAlgoPrioritizeLapsedTokens: e.target.checked,
                 }));
               }}
             />
-            Deliberate practice, prioritizing lapsed words (Continue serving a
-            word until you get it correct 10 times in a row. If you miss it
-            again, relearning is prioritized over new words.)
+            Prioritize lapsed words — If you miss a word, relearning it is
+            prioritized over new adding words.
           </label>
         </div>
         {/* <div>
@@ -214,22 +219,21 @@ export default function OptionsPanel() {
         <div>
           <label>
             <input
-              type="radio"
-              name="algorthim"
+              type="checkbox"
+              name="ttsAlgoReteviewGraduatedTokens"
               value={"STRICT_WORST_SCORING_FIRST"}
-              checked={
-                formSettings.trainingAlgorithm == "STRICT_WORST_SCORING_FIRST"
-              }
+              checked={formSettings.ttsAlgoReviewGraduatedTokens == true}
               onChange={(e) => {
                 const newValue = e.target.value;
                 setFormSettings((formSettings) => ({
                   ...formSettings,
-                  trainingAlgorithm: newValue,
+                  ttsAlgoReviewGraduatedTokens: e.target.checked,
                 }));
               }}
             />
-            Current worst-scoring-first (Serve the top words that you've missed
-            most frequently, per times they've come up.)
+            Spaced repitition — Mixed in with new words, the app will serve you
+            words that you've already learned on a loose spaced repetition
+            schedule.
           </label>
         </div>
       </div>

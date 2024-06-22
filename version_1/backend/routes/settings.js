@@ -15,23 +15,29 @@ router.put("/api/settings", async (req, res) => {
   const trainingTokenSourcing = req.body.trainingTokenSourcing;
   const batchSize = req.body.batchSize;
   const trainingAlgorithm = req.body.trainingAlgorithm;
+  const ttsAlgoDeliberatePractice = req.body.ttsAlgoDeliberatePractice;
+  const ttsAlgoPrioritizeLapsedTokens = req.body.ttsAlgoPrioritizeLapsedTokens;
+  const ttsAlgoReviewGraduatedTokens = req.body.ttsAlgoReviewGraduatedTokens;
   const tokenHighlighting = req.body.tokenHighlighting;
   const tokenHighlightingThreshold = req.body.tokenHighlightingThreshold;
 
-  const newUserData = await prisma.user.update({
+  const updatedUserData = await prisma.user.update({
     where: { id: rawUser.id },
     data: {
       trialDisplayMode: trialDisplayMode,
       trainingTokenSourcing: trainingTokenSourcing,
       batchSize: batchSize,
       trainingAlgorithm: trainingAlgorithm,
+      ttsAlgoDeliberatePractice: ttsAlgoDeliberatePractice,
+      ttsAlgoPrioritizeLapsedTokens: ttsAlgoPrioritizeLapsedTokens,
+      ttsAlgoReviewGraduatedTokens: ttsAlgoReviewGraduatedTokens,
       tokenHighlighting: tokenHighlighting,
       tokenHighlightingThreshold: tokenHighlightingThreshold,
     },
   });
 
-  const newUserSettings = new UserSettingsDto(newUserData);
-  res.send(newUserSettings);
+  const updatedUserSettings = new UserSettingsDto(updatedUserData);
+  res.send(updatedUserSettings);
 });
 
 export default router;

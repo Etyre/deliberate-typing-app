@@ -38,6 +38,10 @@ export default async function getTrainingTokens(userId) {
   const batchSize = userData.batchSize;
   const trainingAlgorithm = userData.trainingAlgorithm;
 
+  const ttsAlgoDeliberatePractice = userData.ttsAlgoDeliberatePractice;
+  const ttsAlgoPrioritizeLapsedTokens = userData.ttsAlgoPrioritizeLapsedTokens;
+  const ttsAlgoReviewGraduatedTokens = userData.ttsAlgoReviewGraduatedTokens;
+
   // Select a set of training tokens based on the trainingAlgorithm.
 
   // Full algorithm:
@@ -46,42 +50,46 @@ export default async function getTrainingTokens(userId) {
 
   // Step 1: Check if the training tokens of the previous sample are ready to graduate, and use them if not.
 
-  const trainingThreshold = 5;
-  // This is the number of times that a token must be typed correctly in a row, in order to graduate.
+  if (ttsAlgoDeliberatePractice) {
+    const trainingThreshold = 5;
+    // This is the number of times that a token must be typed correctly in a row, in order to graduate.
 
-  // Grab the tokens from the previous sample.
-  const previousSample = await prisma.sample.findFirst({
-    where: { userId: userId },
-    orderBy: { dateTimeEnd: "desc" },
-    include: {
-      sampleTrainingTokens: { include: { trackedToken: true } },
-      sampleTrackedTokens: true,
-    },
-  });
-  const previousTrainingTokens = previousSample.sampleTrainingTokens;
-
-  // For each one, check if it has been typed correctly 5 times consecutively, over the past 5 samples that is has been a training token of.
-
-  for (const TrainingToken of previousTrainingTokens) {
-    const tokenId = TrainingToken.trackedToken.id;
-    // Note: The id of this token on the TrackedToken table, is NOT the same as the id of this token on the training token table, or the sampleTrackedToken table. Here, we want the id on the trackedToken table.
-    const recentInstances = await prisma.sampleTrackedToken.findMany({
-      where: { trackedTokenId: tokenId },
-      orderBy: { sample: { dateTimeEnd: "desc" } },
-      include: { trackedToken: true, sample: true },
-      take: trainingThreshold,
+    // Grab the tokens from the previous sample.
+    const previousSample = await prisma.sample.findFirst({
+      where: { userId: userId },
+      orderBy: { dateTimeEnd: "desc" },
+      include: {
+        sampleTrainingTokens: { include: { trackedToken: true } },
+        sampleTrackedTokens: true,
+      },
     });
+    const previousTrainingTokens = previousSample.sampleTrainingTokens;
 
-    for (const sampleTrackedToken of recentInstances) {
-      if (sampleTrackedToken.wasMissed) {
-        const tokenFromSampleTrackedToken = sampleTrackedToken.trackedToken;
-        trainingTokens.push(tokenFromSampleTrackedToken);
-        break;
+    // For each one, check if it has been typed correctly 5 times consecutively, over the past 5 samples that is has been a training token of.
+
+    for (const TrainingToken of previousTrainingTokens) {
+      const tokenId = TrainingToken.trackedToken.id;
+      // Note: The id of this token on the TrackedToken table, is NOT the same as the id of this token on the training token table, or the sampleTrackedToken table. Here, we want the id on the trackedToken table.
+      const recentInstances = await prisma.sampleTrackedToken.findMany({
+        where: { trackedTokenId: tokenId },
+        orderBy: { sample: { dateTimeEnd: "desc" } },
+        include: { trackedToken: true, sample: true },
+        take: trainingThreshold,
+      });
+
+      for (const sampleTrackedToken of recentInstances) {
+        if (sampleTrackedToken.wasMissed) {
+          const tokenFromSampleTrackedToken = sampleTrackedToken.trackedToken;
+          trainingTokens.push(tokenFromSampleTrackedToken);
+          break;
+        }
       }
     }
   }
-
   // Step 2: Check if there are any lapsed tokens. If so, take the worst-scoring lapsed token first, and change it's status to "training".
+
+  if (ttsAlgoPrioritizeLapsedTokens) {
+  }
 
   // while (trainingTokens.length < n) {
 
@@ -93,9 +101,18 @@ export default async function getTrainingTokens(userId) {
 
   // }
 
-  // Step 3: Take a combination of pending tokens and review tokens.
+  // Step 3: Take half of the remaining slots (on average) and fill them with graduated tokens to review in proportion to how many times they've been typed correctly since they graduated.
 
-  //   Note: The following code block is only adding new pending tokens. I'll need to add a different version here, pivoting on an if statement, to add a randomized mix of pending and review tokens.
+  if (ttsAlgoReviewGraduatedTokens) {
+    // const slotsLeft = batchSize - trainingTokens.length;
+    // if (slotsLeft > 0) {
+    //   const numberOfReviewTokens = Math.floor(Math.random() * slotsLeft);
+    //   const reviewTokenProbabilityThreshold = Math.random();
+    //   reviewTokens = await prisma.$queryRaw`
+    //     LIMIT ${numberOfReviewTokens}
+    // `;
+    // }
+  }
 
   if (trainingTokens.length < batchSize) {
     const slotsLeft = batchSize - trainingTokens.length;

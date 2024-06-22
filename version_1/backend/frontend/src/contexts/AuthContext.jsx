@@ -38,6 +38,11 @@ export const AuthContextProvider = ({ children }) => {
             trialDisplayMode: currentUser.trialDisplayMode,
             trainingTokenSourcing: currentUser.trainingTokenSourcing,
             batchSize: currentUser.batchSize,
+            ttsAlgoDeliberatePractice: currentUser.ttsAlgoDeliberatePractice,
+            ttsAlgoPrioritizeLapsedTokens:
+              currentUser.ttsAlgoPrioritizeLapsedTokens,
+            ttsAlgoReviewGraduatedTokens:
+              currentUser.ttsAlgoReviewGraduatedTokens,
             trainingAlgorithm: currentUser.trainingAlgorithm,
             tokenHighlighting: currentUser.tokenHighlighting,
             tokenHighlightingThreshold: currentUser.tokenHighlightingThreshold,

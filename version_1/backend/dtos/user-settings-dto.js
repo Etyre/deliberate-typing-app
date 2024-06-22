@@ -4,6 +4,9 @@ export default class UserSettingsDto {
   trainingTokenSourcing;
   batchSize;
   trainingAlgorithm;
+  ttsAlgoDeliberatePractice;
+  ttsAlgoPrioritizeLapsedTokens;
+  ttsAlgoReviewGraduatedTokens;
   tokenHighlighting;
   tokenHighlightingThreshold;
 
