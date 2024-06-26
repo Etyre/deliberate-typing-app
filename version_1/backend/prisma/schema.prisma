@@ -62,6 +62,13 @@ enum TokenHighlighting {
   NO_HIGHLIGHTING
 }
 
+enum TokenStatus {
+  PENDING
+  TRAINING
+  LAPSED
+  GRADUATED
+}
+
 model Sample {
   id     Int  @id @default(autoincrement())
   userId Int
@@ -88,9 +95,10 @@ model Sample {
 }
 
 model TrackedToken {
-  id                   Int     @id @default(autoincrement())
-  tokenString          String  @unique
-  inPersonalizedCorpus Boolean @default(false)
+  id                   Int         @id @default(autoincrement())
+  tokenString          String      @unique
+  inPersonalizedCorpus Boolean     @default(false)
+  status               TokenStatus @default(PENDING)
 
   sampleTrackedTokens  SampleTrackedToken[]
   sampleTrainingTokens SampleTrainingToken[]

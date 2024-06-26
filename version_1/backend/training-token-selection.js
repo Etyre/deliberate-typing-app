@@ -103,16 +103,16 @@ export default async function getTrainingTokens(userId) {
 
   // Step 3: Take half of the remaining slots (on average) and fill them with graduated tokens to review in proportion to how many times they've been typed correctly since they graduated.
 
-  if (ttsAlgoReviewGraduatedTokens) {
-    // const slotsLeft = batchSize - trainingTokens.length;
-    // if (slotsLeft > 0) {
-    //   const numberOfReviewTokens = Math.floor(Math.random() * slotsLeft);
-    //   const reviewTokenProbabilityThreshold = Math.random();
-    //   reviewTokens = await prisma.$queryRaw`
-    //     LIMIT ${numberOfReviewTokens}
-    // `;
-    // }
-  }
+  //   if (ttsAlgoReviewGraduatedTokens) {
+  //     const slotsLeft = batchSize - trainingTokens.length;
+  //     if (slotsLeft > 0) {
+  //       const numberOfReviewTokens = Math.floor(Math.random() * slotsLeft);
+  //       const reviewTokenProbabilityThreshold = Math.random();
+  //       reviewTokens = await prisma.$queryRaw`
+  //         LIMIT ${numberOfReviewTokens}
+  //     `;
+  //     }
+  //   }
 
   if (trainingTokens.length < batchSize) {
     const slotsLeft = batchSize - trainingTokens.length;

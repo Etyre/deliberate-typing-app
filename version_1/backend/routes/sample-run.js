@@ -34,7 +34,7 @@ function parseText(text) {
   return arrayOfTokenInfos;
 }
 
-// This whole thing is the code that takes the results of a sample-run, sent from the front end in json format, and saves in the database.
+// This whole thing is the code that takes the results of a sample-run, sent from the frontend in json format, and saves in the database.
 router.post("/api/sample-run", async (req, res) => {
   const trial = req.body.sampleData.trialData;
   const dateTimeStart = new Date(req.body.sampleData.dateTimeStart);
@@ -91,7 +91,49 @@ router.post("/api/sample-run", async (req, res) => {
     });
   }
 
-  // SELECT ALL "TrackedToken" WHERE "TrackedToken.tokenString" IN arrayOfTokenInfosOfSampleText
+  const trainingThreshold = 5;
+  // Note we probably want to stor this as a variable somewhere (maybe as a user setting?) since it is also used in the training token selection code.
+
+  // Graduate training tokens: Check if any of the TRAINING tokens have been typed correctly 5 times in a row, and if so, modify their status to GRADUATED in the TrackedToken table.
+
+  for (const trainingToken of trainingTokens) {
+    const trackedTokenId = trainingToken.id;
+    // Note: The id of this token on the TrackedToken table, is NOT the same as the id of this token on the training token table, or the sampleTrackedToken table. Here, we want the id on the trackedToken table.
+    const recentInstances = await prisma.sampleTrackedToken.findMany({
+      where: { trackedTokenId: trackedTokenId },
+      orderBy: { sample: { dateTimeEnd: "desc" } },
+      include: { trackedToken: true, sample: true },
+      take: trainingThreshold,
+    });
+
+    if (
+      !recentInstances.some(
+        (sampleTrackedToken) => sampleTrackedToken.wasMissed
+      )
+    ) {
+      await prisma.trackedToken.update({
+        where: { id: trackedTokenId },
+        data: { status: "GRADUATED" },
+      });
+    }
+  }
+
+  // Note lapsed tokens: Check if any of the missed words are tracked tokens with the status GRADUATED. If so, change their status to LAPSED in the TrackedToken table.
+
+  for (const token of missedWords) {
+    console.log("This here token: ", token);
+    await prisma.trackedToken.updateMany(
+      {
+        where: {
+          status: "GRADUATED",
+          sampleTrackedTokens: { every: { sample: { userId: user.id } } },
+          tokenString: token.tokenString,
+        },
+        data: { status: "LAPSED" },
+      },
+      {}
+    );
+  }
 
   // We're looking for "relevant tracked tokens", for this sample. A relevant tracked token is any tracked token that shows up in the target text of this sample. That includes the all the training tokens, but it might also include tracked tokens that were not served as training tokens this time. This function gives us a list of all the tracked tokens.
 
@@ -156,5 +198,4 @@ router.post("/api/sample-run", async (req, res) => {
 
   res.send("We got it!");
 });
-
 export default router;
