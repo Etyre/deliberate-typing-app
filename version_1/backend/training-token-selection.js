@@ -63,25 +63,28 @@ export default async function getTrainingTokens(userId) {
         sampleTrackedTokens: true,
       },
     });
-    const previousTrainingTokens = previousSample.sampleTrainingTokens;
 
-    // For each one, check if it has been typed correctly 5 times consecutively, over the past 5 samples that is has been a training token of.
+    if (previousSample) {
+      const previousTrainingTokens = previousSample.sampleTrainingTokens;
 
-    for (const TrainingToken of previousTrainingTokens) {
-      const tokenId = TrainingToken.trackedToken.id;
-      // Note: The id of this token on the TrackedToken table, is NOT the same as the id of this token on the training token table, or the sampleTrackedToken table. Here, we want the id on the trackedToken table.
-      const recentInstances = await prisma.sampleTrackedToken.findMany({
-        where: { trackedTokenId: tokenId },
-        orderBy: { sample: { dateTimeEnd: "desc" } },
-        include: { trackedToken: true, sample: true },
-        take: trainingThreshold,
-      });
+      // For each one, check if it has been typed correctly 5 times consecutively, over the past 5 samples that is has been a training token of.
 
-      for (const sampleTrackedToken of recentInstances) {
-        if (sampleTrackedToken.wasMissed) {
-          const tokenFromSampleTrackedToken = sampleTrackedToken.trackedToken;
-          trainingTokens.push(tokenFromSampleTrackedToken);
-          break;
+      for (const TrainingToken of previousTrainingTokens) {
+        const tokenId = TrainingToken.trackedToken.id;
+        // Note: The id of this token on the TrackedToken table, is NOT the same as the id of this token on the training token table, or the sampleTrackedToken table. Here, we want the id on the trackedToken table.
+        const recentInstances = await prisma.sampleTrackedToken.findMany({
+          where: { trackedTokenId: tokenId },
+          orderBy: { sample: { dateTimeEnd: "desc" } },
+          include: { trackedToken: true, sample: true },
+          take: trainingThreshold,
+        });
+
+        for (const sampleTrackedToken of recentInstances) {
+          if (sampleTrackedToken.wasMissed) {
+            const tokenFromSampleTrackedToken = sampleTrackedToken.trackedToken;
+            trainingTokens.push(tokenFromSampleTrackedToken);
+            break;
+          }
         }
       }
     }
