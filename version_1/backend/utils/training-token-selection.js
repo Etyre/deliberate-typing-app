@@ -128,7 +128,7 @@ export default async function getTrainingTokens(userId) {
     if (slotsLeft > 0) {
       const numberOfReviewTokens = Math.floor(Math.random() * slotsLeft);
       const reviewTokenProbabilityThreshold = Math.random();
-      reviewTokens = await prisma.$queryRaw`
+      const reviewTokens = await prisma.$queryRaw`
 
         WITH "RankedSamples" AS (
           SELECT 
