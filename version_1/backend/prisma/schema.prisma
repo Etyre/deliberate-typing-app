@@ -36,7 +36,8 @@ model User {
   tokenHighlightingThreshold Int?
 
   // Link to all the user's sample-runs
-  samples Sample[]
+  samples          Sample[]
+  UserTrackedToken UserTrackedToken[]
 }
 
 enum TrialDisplayMode {
@@ -74,12 +75,16 @@ model Sample {
   userId Int
   user   User @relation(fields: [userId], references: [id])
 
-  trialDisplayMode           TrialDisplayMode
-  trainingTokenSourcing      TrainingTokenSourcing
-  batchSize                  Int
-  trainingAlgorithm          TrainingAlgorithm
-  tokenHighlighting          TokenHighlighting
-  tokenHighlightingThreshold Int?
+  trialDisplayMode      TrialDisplayMode
+  trainingTokenSourcing TrainingTokenSourcing
+  batchSize             Int
+  trainingAlgorithm     TrainingAlgorithm
+
+  ttsAlgoDeliberatePractice     Boolean
+  ttsAlgoPrioritizeLapsedTokens Boolean
+  ttsAlgoReviewGraduatedTokens  Boolean
+  tokenHighlighting             TokenHighlighting
+  tokenHighlightingThreshold    Int?
 
   dateTimeStart            DateTime
   dateTimeEnd              DateTime
@@ -102,6 +107,7 @@ model TrackedToken {
 
   sampleTrackedTokens  SampleTrackedToken[]
   sampleTrainingTokens SampleTrainingToken[]
+  UserTrackedToken     UserTrackedToken[]
 }
 
 enum TrackedTokenSource {
@@ -127,4 +133,16 @@ model SampleTrainingToken {
   sample         Sample       @relation(fields: [sampleId], references: [id])
   trackedTokenId Int
   trackedToken   TrackedToken @relation(fields: [trackedTokenId], references: [id])
+}
+
+//
+model UserTrackedToken {
+  id             Int          @id @default(autoincrement())
+  userId         Int
+  user           User         @relation(fields: [userId], references: [id])
+  trackedTokenId Int
+  trackedToken   TrackedToken @relation(fields: [trackedTokenId], references: [id])
+
+  status               TokenStatus @default(PENDING)
+  inPersonalizedCorpus Boolean     @default(false)
 }

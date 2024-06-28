@@ -92,31 +92,91 @@ export default async function getTrainingTokens(userId) {
   // Step 2: Check if there are any lapsed tokens. If so, take the worst-scoring lapsed token first, and change it's status to "training".
 
   if (ttsAlgoPrioritizeLapsedTokens) {
+    const numberOfLapsedTokens = 1;
+    if (trainingTokens.length < batchSize) {
+      const worstLapsedToken = await prisma.$queryRaw`
+            SELECT
+        TT."id",
+        TT."tokenString",
+        SUM(CASE WHEN "wasMissed" = TRUE THEN 1 ELSE 0 END)::float / COUNT(STT."id") AS "missRatio"
+      FROM
+        "TrackedToken" AS TT
+          INNER JOIN "SampleTrackedToken" AS STT
+          ON(TT."id" = STT."trackedTokenId")
+            INNER JOIN "Sample" AS S
+            ON(STT."sampleId" = S."id")
+              INNER JOIN "User" AS U
+              ON(S."userId" = U."id")
+      WHERE
+        U."id" = ${userId} AND
+        TT."status" = 'LAPSED'
+      GROUP BY
+        TT."id", TT."tokenString"
+      ORDER BY 
+        "missRatio" DESC
+      LIMIT ${numberOfLapsedTokens};
+            `;
+      if (worstLapsedToken) {
+        trainingTokens.push(worstLapsedToken);
+      }
+    }
   }
-
-  // while (trainingTokens.length < n) {
-
-  // Take each token, and review it's sample-history, from the top down. On the way, note if it has been missed. Search until you find a "trainingThreshold" number of "hits". If there was a miss, before that most recent series of hits, then add it to the list of lapsed tokens.
-
-  //   const lapsedTokens = await prisma.$queryRaw`
-
-  //   `;
-
-  // }
-
   // Step 3: Take half of the remaining slots (on average) and fill them with graduated tokens to review in proportion to how many times they've been typed correctly since they graduated.
 
-  //   if (ttsAlgoReviewGraduatedTokens) {
-  //     const slotsLeft = batchSize - trainingTokens.length;
-  //     if (slotsLeft > 0) {
-  //       const numberOfReviewTokens = Math.floor(Math.random() * slotsLeft);
-  //       const reviewTokenProbabilityThreshold = Math.random();
-  //       reviewTokens = await prisma.$queryRaw`
-  //         LIMIT ${numberOfReviewTokens}
-  //     `;
-  //     }
-  //   }
+  if (ttsAlgoReviewGraduatedTokens) {
+    const slotsLeft = batchSize - trainingTokens.length;
+    if (slotsLeft > 0) {
+      const numberOfReviewTokens = Math.floor(Math.random() * slotsLeft);
+      const reviewTokenProbabilityThreshold = Math.random();
+      reviewTokens = await prisma.$queryRaw`
 
+        WITH "RankedSamples" AS (
+          SELECT 
+            "stt"."trackedTokenId",
+            "stt"."wasMissed",
+            "s"."userId",
+            "s"."dateTimeEnd",
+            ROW_NUMBER() OVER (PARTITION BY "stt"."trackedTokenId" ORDER BY "s"."dateTimeEnd" DESC) AS "rn",
+            SUM(CASE WHEN "stt"."wasMissed" THEN 1 ELSE 0 END) OVER (PARTITION BY "stt"."trackedTokenId" ORDER BY "s"."dateTimeEnd" DESC) AS "misses"
+          FROM 
+            "SampleTrackedToken" "stt"
+            JOIN "Sample" "s" ON ("stt"."sampleId" = "s"."id")
+          INNER JOIN "UserTrackedToken" "utt" ON ("utt"."trackedTokenId" = "stt"."trackedTokenId")
+          WHERE 
+            "s"."userId" = ${userId} AND
+          "utt"."status" = 'GRADUATED' 
+        ),
+        "ConsecutiveHits" AS (
+          SELECT 
+            "trackedTokenId",
+            SUM(CASE WHEN "wasMissed" = false AND ("misses" = 0 OR "rn" < (SELECT MIN("rn") FROM "RankedSamples" "r2" WHERE "r2"."trackedTokenId" = "RankedSamples"."trackedTokenId" AND "r2"."wasMissed" = true)) THEN 1 ELSE 0 END) AS "consecutive_hits"
+          FROM 
+            "RankedSamples"
+          GROUP BY 
+            "trackedTokenId"
+        )
+        SELECT 
+          "tt"."id" AS "tracked_token_id",
+          "tt"."tokenString",
+          COALESCE("ch"."consecutive_hits", 0) AS "consecutive_hits",
+          POWER(0.7, "ch"."consecutive_hits")  AS "ReviewProbability"
+        FROM 
+          "TrackedToken" "tt"
+          LEFT JOIN "ConsecutiveHits" "ch" ON "tt"."id" = "ch"."trackedTokenId"
+        WHERE
+          POWER(0.7, "ch"."consecutive_hits" * 0.6) > ${reviewTokenProbabilityThreshold}
+        ORDER BY 
+          "consecutive_hits" DESC, "tt"."tokenString" 
+
+        LIMIT ${numberOfReviewTokens} ;
+    `;
+      // Note: There's some question of whether these decay curves have the right parameters, both the exponent multiple and the base. I basically picked they by eyeballing. There's probably cog sci research on the correct forgetting curves to use.
+
+      trainingTokens.push(...reviewTokens);
+    }
+  }
+
+  // Step 4: The fallback step: fill the remaining slots with the most missed tokens.
   if (trainingTokens.length < batchSize) {
     const slotsLeft = batchSize - trainingTokens.length;
     const tokens = await getMostMissedTokens(slotsLeft, userId);

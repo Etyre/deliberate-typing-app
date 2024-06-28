@@ -71,6 +71,9 @@ router.post("/api/sample-run", async (req, res) => {
 
       trialDisplayMode: userSettings.trialDisplayMode,
       trainingTokenSourcing: userSettings.trainingTokenSourcing,
+      ttsAlogDeliberatePractice: userSettings.ttsAlgoDeliberatePractice,
+      ttsAlgoPrioritizeLapsedTokens: userSettings.ttsAlgoPrioritizeLapsedTokens,
+      ttsAlgoReviewGraduatedTokens: userSettings.ttsAlgoReviewGraduatedTokens,
       batchSize: userSettings.batchSize,
       trainingAlgorithm: userSettings.trainingAlgorithm,
       tokenHighlighting: userSettings.tokenHighlighting,
@@ -84,10 +87,17 @@ router.post("/api/sample-run", async (req, res) => {
   for (let index = 0; index < missedWords.length; index++) {
     const word = missedWords[index];
     const wordText = word.tokenString;
-    await prisma.trackedToken.upsert({
+    const recentlyMissedTrackedToken = await prisma.trackedToken.upsert({
       where: { tokenString: wordText },
       update: {},
       create: { tokenString: wordText },
+    });
+    await prisma.userTrackedToken.upsert({
+      where: { trackedToken: { tokenString: wordText }, userId: user.id },
+      create: {
+        userId: user.id,
+        trackedTokenId: recentlyMissedTrackedToken.id,
+      },
     });
   }
 
@@ -111,8 +121,8 @@ router.post("/api/sample-run", async (req, res) => {
         (sampleTrackedToken) => sampleTrackedToken.wasMissed
       )
     ) {
-      await prisma.trackedToken.update({
-        where: { id: trackedTokenId },
+      await prisma.userTrackedToken.update({
+        where: { trackedTokenId: trackedTokenId, userId: user.id },
         data: { status: "GRADUATED" },
       });
     }
@@ -122,12 +132,12 @@ router.post("/api/sample-run", async (req, res) => {
 
   for (const token of missedWords) {
     console.log("This here token: ", token);
-    await prisma.trackedToken.updateMany(
+    await prisma.userTrackedToken.updateMany(
       {
         where: {
           status: "GRADUATED",
-          sampleTrackedTokens: { every: { sample: { userId: user.id } } },
-          tokenString: token.tokenString,
+          userId: user.id,
+          trackedToken: { tokenString: token.tokenString },
         },
         data: { status: "LAPSED" },
       },

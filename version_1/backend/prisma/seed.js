@@ -17,7 +17,7 @@ await prisma.user.create({
     username: "test user",
     passwordHash: "test",
     passwordSalt: "test",
-    emailAddress: "elityre@gmail.com",
+    emailAddress: "test@test.com",
     hasPaid: false,
   },
 });

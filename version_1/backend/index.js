@@ -12,7 +12,7 @@ import UserDto from "./dtos/user-dto.js";
 import UserSettingsDto from "./dtos/user-settings-dto.js";
 import settingsRouter from "./routes/settings.js";
 import cookieParser from "cookie-parser";
-import getTrainingTokens from "./training-token-selection.js";
+import getTrainingTokens from "./utils/training-token-selection.js";
 
 config();
 
