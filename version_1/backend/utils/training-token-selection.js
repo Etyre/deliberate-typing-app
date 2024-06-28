@@ -94,7 +94,8 @@ export default async function getTrainingTokens(userId) {
   if (ttsAlgoPrioritizeLapsedTokens) {
     const numberOfLapsedTokens = 1;
     if (trainingTokens.length < batchSize) {
-      const worstLapsedToken = await prisma.$queryRaw`
+      // Note that the way we're doing the array destructuring here, we're only grabbing the first element of the array, even if numberOfLapsedTokens is greater than 1.
+      const [worstLapsedToken] = await prisma.$queryRaw`
             SELECT
         TT."id",
         TT."tokenString",
