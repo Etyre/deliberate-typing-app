@@ -46,8 +46,7 @@ export async function sendCompletedSampleData({
   });
   return true;
 }
-
-export async function saveSettings({
+export async function sendSettingsToBackend({
   trialDisplayMode,
   trainingTokenSourcing,
   batchSize,

@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, useMemo } from "react";
-import { getCurrentUserFromToken } from "../api/api";
+import { getCurrentUserFromToken, sendSettingsToBackend } from "../api/api";
+import { set } from "react-hook-form";
 
 // Create the AuthContext
 export const AuthContext = createContext();
@@ -50,11 +51,19 @@ export const AuthContextProvider = ({ children }) => {
         : null,
     [currentUser]
   );
+  // This function does two things: it sends the new settings to the backend database, and then it updates the state memo that is holding the settings her on the frontend.
+  async function setSettings(newSettings) {
+    // Send the new settings to the backend
+    await sendSettingsToBackend(newSettings);
+    // Update the frontend settings memo
+    setCurrentUser({ ...currentUser, ...newSettings });
+    // Note that the way the line above is structured, it will overwrite any settings that are already in the currentUser object with the new settings. This is the desired behavior.
+  }
 
   // Render the AuthContextProvider with the provided value
   return (
     <AuthContext.Provider
-      value={{ currentUser, setCurrentUser, isAnonUser, settings }}
+      value={{ currentUser, setCurrentUser, isAnonUser, settings, setSettings }}
     >
       {children}
     </AuthContext.Provider>

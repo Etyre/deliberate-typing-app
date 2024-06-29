@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useMemo, useContext } from "react";
-import { saveSettings } from "../api/api";
+import { sendSettingsToBackend } from "../api/api";
 import { AuthContext } from "../contexts/AuthContext";
 
 /**
@@ -17,35 +17,43 @@ import { AuthContext } from "../contexts/AuthContext";
  */
 
 export default function OptionsPanel() {
-  const { settings } = useContext(AuthContext);
+  const { settings, setSettings } = useContext(AuthContext);
 
   const [formSettings, setFormSettings] = useState({ ...settings });
 
   useEffect(() => {
     setFormSettings({ ...settings });
+    console.log("foo");
+    console.log(settings);
   }, [settings]);
 
-  useEffect(() => {
-    if (!formSettings) {
-      return;
-    }
-    saveSettings(formSettings);
-  }, [
-    formSettings.trialDisplayMode,
-    formSettings.trainingTokenSourcing,
-    formSettings.batchSize,
-    formSettings.trainingAlgorithm,
-    formSettings.ttsAlgoDeliberatePractice,
-    formSettings.ttsAlgoPrioritizeLapsedTokens,
-    formSettings.ttsAlgoReviewGraduatedTokens,
-    formSettings.tokenHighlighting,
-    formSettings.tokenHighlightingThreshold,
-  ]);
+  // useEffect(() => {
+  //   if (!formSettings) {
+  //     return;
+  //   }
+  //   setSettings(formSettings);
+  // }, [
+  //   formSettings.trialDisplayMode,
+  //   formSettings.trainingTokenSourcing,
+  //   formSettings.batchSize,
+  //   formSettings.trainingAlgorithm,
+  //   formSettings.ttsAlgoDeliberatePractice,
+  //   formSettings.ttsAlgoPrioritizeLapsedTokens,
+  //   formSettings.ttsAlgoReviewGraduatedTokens,
+  //   formSettings.tokenHighlighting,
+  //   formSettings.tokenHighlightingThreshold,
+  // ]);
 
   return settings == null ? (
     <div>Loading...</div>
   ) : (
-    <form className="settingsPanel">
+    <form
+      className="settingsPanel"
+      onSubmit={(e) => {
+        e.preventDefault();
+        setSettings(formSettings);
+      }}
+    >
       <h2>Settings</h2>
       <div>
         <h3>Display Mode [not yet functional]</h3>
@@ -165,7 +173,7 @@ export default function OptionsPanel() {
       </div>
       {/*  */}
       <div>
-        <h3>Training Alogirthm [not yet functional]</h3>
+        <h3>Training Algorithm</h3>
         <p>
           Deliberate Typing serves you particular words to practice
           typing/spelling. The basic algorithm selects whichever words you have
@@ -238,7 +246,7 @@ export default function OptionsPanel() {
         </div>
       </div>
       {/*  */}
-      <div>
+      {/* <div>
         <h3>Token Highlighting [not yet functional]</h3>
         <p>Which words should be highlighted, in the visual mode?</p>
         <div>
@@ -324,7 +332,7 @@ export default function OptionsPanel() {
             No highlight
           </label>
         </div>
-      </div>
+      </div> */}
       <div>
         <h3>Add personalized text [not yet functional]</h3>
         <p>
@@ -335,6 +343,18 @@ export default function OptionsPanel() {
         <label>
           <input type="text"></input>
         </label>
+      </div>
+      <div>
+        <br />
+        <button
+          type="submit"
+          onSubmit={() => {}}
+          disabled={Object.keys(formSettings).every(
+            (key) => formSettings[key] === settings[key]
+          )}
+        >
+          save settings
+        </button>
       </div>
 
       {/*    Some settings to add:

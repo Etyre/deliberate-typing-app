@@ -7,7 +7,7 @@ import NavBar from "../components/NavBar.jsx";
 import { AuthContext } from "../contexts/AuthContext";
 
 export default function Home() {
-  const { currentUser } = useContext(AuthContext);
+  const { currentUser, settings } = useContext(AuthContext);
 
   const [currentTrial, setCurrentTrial] = useState(null);
   const [onDeckTrial, setOnDeckTrial] = useState(null);
@@ -62,6 +62,24 @@ export default function Home() {
     }
     // This is in an "if" clause, so that it doesn't trigger in brief periods when currentTrial is null.
   }, [currentTrial]);
+
+  // When the settings change, set the current trial and the onDeck trial to null, which trigger the functions above to get new trials using the new settings.
+
+  useEffect(() => {
+    setCurrentTrial(null);
+    setOnDeckTrial(null);
+  }, [
+    settings?.batchSize,
+    settings?.trainingAlgorithm,
+    settings?.trainingTokenSourcing,
+    settings?.trialDisplayMode,
+    settings?.tokenHighlighting,
+    settings?.tokenHighlightingThreshold,
+
+    settings?.ttsAlgoDeliberatePractice,
+    settings?.ttsAlgoPrioritizeLapsedTokens,
+    settings?.ttsAlgoReviewGraduatedTokens,
+  ]);
 
   console.log(trainingTokens);
 
