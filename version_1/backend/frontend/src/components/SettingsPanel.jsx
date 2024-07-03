@@ -97,82 +97,6 @@ export default function OptionsPanel() {
       </div>
       {/*  */}
       <div>
-        <h3>Training token sourcing [not yet functional]</h3>
-        <p>Where should the app get the words that you train on?</p>
-        <div>
-          <label>
-            <input
-              type="radio"
-              name="trainingTokenSourcing"
-              value={"ALL_TRACKED_TOKENS"}
-              checked={
-                formSettings.trainingTokenSourcing == "ALL_TRACKED_TOKENS"
-              }
-              onChange={(e) => {
-                const newValue = e.target.value;
-                setFormSettings((formSettings) => ({
-                  ...formSettings,
-                  trainingTokenSourcing: newValue,
-                }));
-              }}
-            />
-            All history (words that you've missed in the past, from any source)
-          </label>
-        </div>
-        <div>
-          <label>
-            <input
-              type="radio"
-              name="trainingTokenSourcing"
-              value={"MANUAL_LIST"}
-              checked={formSettings.trainingTokenSourcing == "MANUAL_LIST"}
-              onChange={(e) => {
-                const newValue = e.target.value;
-                setFormSettings((formSettings) => ({
-                  ...formSettings,
-                  trainingTokenSourcing: newValue,
-                }));
-              }}
-            />
-            Manual import (exclusively words that are listed below)
-          </label>
-          <div>
-            <label>
-              Training tokens:
-              <div>
-                <input type="text" />
-                {/* Note, make this a bigger textbox */}
-              </div>
-            </label>
-          </div>
-        </div>
-      </div>
-      {/*  */}
-      <div>
-        <h3>Batch size</h3>
-        <p>How many words do you want to train at once?</p>
-
-        <div>
-          <label>
-            n ={" "}
-            <input
-              type="number"
-              min="1"
-              max="10"
-              value={formSettings.batchSize}
-              onChange={(e) => {
-                const newValue = Number(e.target.value);
-                setFormSettings((formSettings) => ({
-                  ...formSettings,
-                  batchSize: newValue,
-                }));
-              }}
-            />
-          </label>
-        </div>
-      </div>
-      {/*  */}
-      <div>
         <h3>Training Algorithm</h3>
         <p>
           Deliberate Typing serves you particular words to practice
@@ -245,6 +169,83 @@ export default function OptionsPanel() {
           </label>
         </div>
       </div>
+      {/*  */}
+      <div>
+        <h3>Batch size</h3>
+        <p>How many words do you want to train at once?</p>
+
+        <div>
+          <label>
+            n ={" "}
+            <input
+              type="number"
+              min="1"
+              max="10"
+              value={formSettings.batchSize}
+              onChange={(e) => {
+                const newValue = Number(e.target.value);
+                setFormSettings((formSettings) => ({
+                  ...formSettings,
+                  batchSize: newValue,
+                }));
+              }}
+            />
+          </label>
+        </div>
+      </div>
+      {/*  */}
+      <div>
+        <h3>Training token sourcing [not yet functional]</h3>
+        <p>Where should the app get the words that you train on?</p>
+        <div>
+          <label>
+            <input
+              type="radio"
+              name="trainingTokenSourcing"
+              value={"ALL_TRACKED_TOKENS"}
+              checked={
+                formSettings.trainingTokenSourcing == "ALL_TRACKED_TOKENS"
+              }
+              onChange={(e) => {
+                const newValue = e.target.value;
+                setFormSettings((formSettings) => ({
+                  ...formSettings,
+                  trainingTokenSourcing: newValue,
+                }));
+              }}
+            />
+            All history (words that you've missed in the past, from any source)
+          </label>
+        </div>
+        <div>
+          <label>
+            <input
+              type="radio"
+              name="trainingTokenSourcing"
+              value={"MANUAL_LIST"}
+              checked={formSettings.trainingTokenSourcing == "MANUAL_LIST"}
+              onChange={(e) => {
+                const newValue = e.target.value;
+                setFormSettings((formSettings) => ({
+                  ...formSettings,
+                  trainingTokenSourcing: newValue,
+                }));
+              }}
+            />
+            Manual import (exclusively words that are listed below)
+          </label>
+          <div>
+            <label>
+              Training tokens:
+              <div>
+                <input type="text" />
+                {/* Note, make this a bigger textbox */}
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+
       {/*  */}
       {/* <div>
         <h3>Token Highlighting [not yet functional]</h3>
