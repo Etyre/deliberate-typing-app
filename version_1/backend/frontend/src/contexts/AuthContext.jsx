@@ -1,6 +1,5 @@
 import React, { createContext, useState, useEffect, useMemo } from "react";
 import { getCurrentUserFromToken, sendSettingsToBackend } from "../api/api";
-import { set } from "react-hook-form";
 
 // Create the AuthContext
 export const AuthContext = createContext();
