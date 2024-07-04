@@ -108,9 +108,11 @@ export default async function getTrainingTokens(userId) {
             ON(STT."sampleId" = S."id")
               INNER JOIN "User" AS U
               ON(S."userId" = U."id")
+          INNER JOIN "UserTrackedToken" AS UTT
+          ON(TT."id" = UTT."trackedTokenId")
       WHERE
         U."id" = ${userId} AND
-        TT."status" = 'LAPSED'
+        UTT."status" = 'LAPSED'
       GROUP BY
         TT."id", TT."tokenString"
       ORDER BY 

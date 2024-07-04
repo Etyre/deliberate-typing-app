@@ -13,6 +13,7 @@ import UserSettingsDto from "./dtos/user-settings-dto.js";
 import settingsRouter from "./routes/settings.js";
 import cookieParser from "cookie-parser";
 import getTrainingTokens from "./utils/training-token-selection.js";
+import { normalizeDiacritics } from "normalize-text";
 
 config();
 
@@ -66,8 +67,47 @@ function parseText(text) {
   return arrayOfTokenInfos;
 }
 
+function replaceTypographicChars(text) {
+  const typographicChars = {
+    "“": '"',
+    "”": '"',
+    "‘": "'",
+    "’": "'",
+    "—": "-",
+    "–": "-",
+    "…": "...",
+    "«": '"',
+    "»": '"',
+    "‹": "'",
+    "›": "'",
+    "„": '"',
+    "‚": "'",
+    "‛": "'",
+    "‟": '"',
+    "′": "'",
+    "″": '"',
+    "‹": "<",
+    "›": ">",
+    "•": "*",
+    "–": "-",
+    "—": "-",
+    "‐": "-",
+    "‑": "-",
+    "‒": "-",
+    "—": "-",
+    "―": "-",
+  };
+
+  return text.replace(
+    /[\u2018\u2019\u201C\u201D\u2014\u2013\u2026\u00AB\u00BB\u2039\u203A\u201E\u201A\u201B\u201F\u2032\u2033\u203A\u2039\u2022\u2013\u2014\u2010\u2011\u2012\u2014\u2015]/g,
+    (char) => typographicChars[char] || char
+  );
+}
+
 async function getTrial(prompt) {
-  return await openAiApi(prompt);
+  const trialText = await openAiApi(prompt);
+  const normalizedTrialText = normalizeDiacritics(trialText);
+  return replaceTypographicChars(normalizedTrialText);
 }
 
 async function determineTrainingTokens(numberOfTokens) {

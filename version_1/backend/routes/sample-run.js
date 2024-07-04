@@ -71,7 +71,7 @@ router.post("/api/sample-run", async (req, res) => {
 
       trialDisplayMode: userSettings.trialDisplayMode,
       trainingTokenSourcing: userSettings.trainingTokenSourcing,
-      ttsAlogDeliberatePractice: userSettings.ttsAlgoDeliberatePractice,
+      ttsAlgoDeliberatePractice: userSettings.ttsAlgoDeliberatePractice,
       ttsAlgoPrioritizeLapsedTokens: userSettings.ttsAlgoPrioritizeLapsedTokens,
       ttsAlgoReviewGraduatedTokens: userSettings.ttsAlgoReviewGraduatedTokens,
       batchSize: userSettings.batchSize,
@@ -83,7 +83,7 @@ router.post("/api/sample-run", async (req, res) => {
       numberOfMissedWords: missedWords.length,
     },
   });
-  // We're checking here, if a there's a word that's in missedWords, but not in trackedTokens, then we add it to trackedTokens.
+  // We're checking here, if a there's a word that's in missedWords, but not in trackedTokens, then we add it to trackedTokens and to userTrackedTokens.
   for (let index = 0; index < missedWords.length; index++) {
     const word = missedWords[index];
     const wordText = word.tokenString;
@@ -93,11 +93,18 @@ router.post("/api/sample-run", async (req, res) => {
       create: { tokenString: wordText },
     });
     await prisma.userTrackedToken.upsert({
-      where: { trackedToken: { tokenString: wordText }, userId: user.id },
+      where: {
+        userId_trackedTokenId: {
+          trackedTokenId: recentlyMissedTrackedToken.id,
+          userId: user.id,
+        },
+      },
+      // old version: where: { trackedTokenId trackedToken: { tokenString: wordText }, userId: user.id },
       create: {
         userId: user.id,
         trackedTokenId: recentlyMissedTrackedToken.id,
       },
+      update: {},
     });
   }
 
@@ -198,6 +205,10 @@ router.post("/api/sample-run", async (req, res) => {
       return trainingToken.tokenString == trackedToken.tokenString;
     });
 
+    if (!trackedToken) {
+      continue;
+      // Skip to the next iteration of the loop.
+    }
     await prisma.sampleTrainingToken.create({
       data: {
         sampleId: sampleRecord.id,
