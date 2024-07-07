@@ -5,7 +5,6 @@ import { getTrial, sendCompletedSampleData } from "../api/api.js";
 import OptionsPanel from "../components/SettingsPanel.jsx";
 import NavBar from "../components/NavBar.jsx";
 import { AuthContext } from "../contexts/AuthContext";
-import { set } from "react-hook-form";
 
 export default function Home() {
   const { currentUser, settings } = useContext(AuthContext);
