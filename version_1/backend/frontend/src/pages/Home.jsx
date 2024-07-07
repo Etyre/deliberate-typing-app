@@ -5,12 +5,14 @@ import { getTrial, sendCompletedSampleData } from "../api/api.js";
 import OptionsPanel from "../components/SettingsPanel.jsx";
 import NavBar from "../components/NavBar.jsx";
 import { AuthContext } from "../contexts/AuthContext";
+import { set } from "react-hook-form";
 
 export default function Home() {
   const { currentUser, settings } = useContext(AuthContext);
 
   const [currentTrial, setCurrentTrial] = useState(null);
   const [onDeckTrial, setOnDeckTrial] = useState(null);
+  const [previousSample, setPreviousSample] = useState(null);
 
   const [textToType, setTextToType] = useState("");
   const [trainingTokens, setTrainingTokens] = useState([]);
@@ -20,18 +22,7 @@ export default function Home() {
    */
   const [activeView, setActiveView] = useState("TYPING");
 
-  // If any of the following user settings change, we set both the current and the onDeck trial to null, which triggers a cascade of API calls to produce a new trial in the UX.
-  // useEffect(() => {
-  //   setCurrentTrial(null);
-  //   setOnDeckTrial(null);
-  // }, [
-  //   currentTrial.userSettings.trialDisplayMode,
-  //   currentTrial.userSettings.trainingTokenSouring,
-  //   currentTrial.userSettings.batchSize,
-  //   currentTrial.userSettings.trainingAlogorithm,
-  // ]);
-
-  // If the current trial is set to null, we move up the onDeck trial into the currentTrial position, and set onDeckTrial to null.
+  // If the current trial is set to null, we move up the onDeck trial into the currentTrial position, and set onDeckTrial to null. (We first save the currentTrial as previousTrial.)
   // Setting the current trial to null is the way that we trigger the cascade.
   useEffect(() => {
     if (!currentTrial && onDeckTrial) {
@@ -81,7 +72,9 @@ export default function Home() {
     settings?.ttsAlgoReviewGraduatedTokens,
   ]);
 
-  console.log(trainingTokens);
+  // console.log(trainingTokens);
+  console.log("currentTrial: ", currentTrial);
+  console.log("previousSample: ", previousSample);
 
   return (
     <div>
@@ -89,6 +82,11 @@ export default function Home() {
       <div>
         {activeView == "TYPING" && (
           <div className="textAndTypingContainer">
+            <div className="score-box">
+              <p>
+                <b>Previous Score:</b> {previousSample?.missedWords.length}
+              </p>
+            </div>
             <TextToTypeBox
               trainingTokens={trainingTokens}
               textToType={textToType}
@@ -99,6 +97,7 @@ export default function Home() {
               targetText={textToType}
               currentTrial={currentTrial}
               setCurrentTrial={setCurrentTrial}
+              setPreviousSample={setPreviousSample}
             ></Typingbox>
           </div>
         )}

@@ -97,6 +97,7 @@ export default function Typingbox({
   trainingTokens,
   currentTrial,
   setCurrentTrial,
+  setPreviousSample,
 }) {
   // An alternative way to write this line:
   // export default function Textbox (props)
@@ -205,7 +206,7 @@ export default function Typingbox({
     console.log("mistypedTokensInfos: ", mistypedTokensInfos);
   }, [mistypedTokensInfos]);
 
-  async function submitSampleRun() {
+  async function submitSampleRunAndUpdateState() {
     if (dateTimeEnd) {
       const data = {
         trialData: currentTrial,
@@ -216,13 +217,14 @@ export default function Typingbox({
         missedWords: mistypedTokensInfos,
       };
       await sendCompletedSampleData(data);
+      setPreviousSample(data);
       setCurrentTrial(null);
     }
   }
 
   async function submitSampleRunViaKeystroke(event) {
     if (event.key == "Enter") {
-      submitSampleRun();
+      submitSampleRunAndUpdateState();
     }
   }
 
@@ -236,7 +238,7 @@ export default function Typingbox({
         }}
       />
 
-      <button disabled={!dateTimeEnd} onClick={submitSampleRun}>
+      <button disabled={!dateTimeEnd} onClick={submitSampleRunAndUpdateState}>
         submit
       </button>
     </div>
