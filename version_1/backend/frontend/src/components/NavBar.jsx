@@ -19,6 +19,13 @@ export default function NavBar(props) {
       </button>
       <button
         onClick={() => {
+          props.navigationFunction("WORD_LIST");
+        }}
+      >
+        Word List
+      </button>
+      <button
+        onClick={() => {
           props.navigationFunction("OPTIONS_PANEL");
         }}
       >

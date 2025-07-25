@@ -3,6 +3,7 @@ import TextToTypeBox from "../components/TextToTypeBox.jsx";
 import { useContext, useEffect, useState } from "react";
 import { getTrial, sendCompletedSampleData } from "../api/api.js";
 import OptionsPanel from "../components/SettingsPanel.jsx";
+import WordList from "../components/WordList.jsx";
 import NavBar from "../components/NavBar.jsx";
 import { AuthContext } from "../contexts/AuthContext";
 
@@ -17,7 +18,7 @@ export default function Home() {
   const [trainingTokens, setTrainingTokens] = useState([]);
 
   /**
-   * @type {[ "TYPING"| "OPTIONS_PANEL" | "STATS",]}
+   * @type {[ "TYPING"| "OPTIONS_PANEL" | "STATS" | "WORD_LIST",]}
    */
   const [activeView, setActiveView] = useState("TYPING");
 
@@ -98,6 +99,11 @@ export default function Home() {
               setCurrentTrial={setCurrentTrial}
               setPreviousSample={setPreviousSample}
             ></Typingbox>
+          </div>
+        )}
+        {activeView == "WORD_LIST" && (
+          <div>
+            <WordList></WordList>
           </div>
         )}
         {activeView == "OPTIONS_PANEL" && (
