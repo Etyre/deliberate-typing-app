@@ -113,6 +113,11 @@ enum TrackedTokenSource {
   ADDED_FROM_PERSONAL_CORPUS
 }
 
+enum TokenActivationStatus {
+  ACTIVE
+  INACTIVE
+}
+
 // After a word is missed for the first time it is added to tracked tokens. Ever after, we track the number of hits and misses of that token.
 model SampleTrackedToken {
   id             Int          @id @default(autoincrement())
@@ -141,9 +146,10 @@ model UserTrackedToken {
   trackedTokenId Int
   trackedToken   TrackedToken @relation(fields: [trackedTokenId], references: [id])
 
-  status               TokenStatus        @default(PENDING)
-  inPersonalizedCorpus Boolean            @default(false)
-  tokenSource          TrackedTokenSource @default(MISSED_IN_PRACTICE)
+  status               TokenStatus           @default(PENDING)
+  inPersonalizedCorpus Boolean               @default(false)
+  tokenSource          TrackedTokenSource    @default(MISSED_IN_PRACTICE)
+  activationStatus     TokenActivationStatus @default(ACTIVE)
 
   @@unique([userId, trackedTokenId])
 }
