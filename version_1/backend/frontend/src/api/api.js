@@ -46,6 +46,8 @@ export async function sendCompletedSampleData({
   });
   return true;
 }
+
+
 export async function sendSettingsToBackend({
   trialDisplayMode,
   trainingTokenSourcing,

@@ -141,8 +141,9 @@ model UserTrackedToken {
   trackedTokenId Int
   trackedToken   TrackedToken @relation(fields: [trackedTokenId], references: [id])
 
-  status               TokenStatus @default(PENDING)
-  inPersonalizedCorpus Boolean     @default(false)
+  status               TokenStatus        @default(PENDING)
+  inPersonalizedCorpus Boolean            @default(false)
+  tokenSource          TrackedTokenSource @default(MISSED_IN_PRACTICE)
 
   @@unique([userId, trackedTokenId])
 }
