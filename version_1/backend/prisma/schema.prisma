@@ -110,7 +110,8 @@ model TrackedToken {
 
 enum TrackedTokenSource {
   MISSED_IN_PRACTICE
-  ADDED_FROM_PERSONAL_CORPUS
+  ADDED_MANUALLY
+  BOTH_MISSED_AND_ADDED_MANUALLY
 }
 
 enum TokenActivationStatus {

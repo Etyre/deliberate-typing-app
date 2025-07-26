@@ -1,4 +1,12 @@
+import { useContext } from "react";
+import { AuthContext } from "../contexts/AuthContext";
+
 export default function WordList() {
+  const { currentUser } = useContext(AuthContext);
+
+  if (!currentUser) {
+    return <div>Please log in to manage your word list.</div>;
+  }
   return (
     <div>
       <div>

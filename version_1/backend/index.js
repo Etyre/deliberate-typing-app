@@ -14,6 +14,7 @@ import settingsRouter from "./routes/settings.js";
 import cookieParser from "cookie-parser";
 import getTrainingTokens from "./utils/training-token-selection.js";
 import { normalizeDiacritics } from "normalize-text";
+import trackedTokensRouter from "./routes/tracked-tokens.js";
 
 config();
 
@@ -38,6 +39,8 @@ app.use(sampleRunRouter);
 app.use(authenticationRouter);
 
 app.use(settingsRouter);
+
+app.use(trackedTokensRouter);
 
 function parseText(text) {
   const theWordAndPunctIterator = text.matchAll(/[\w']+|[^\w\s']/g);
