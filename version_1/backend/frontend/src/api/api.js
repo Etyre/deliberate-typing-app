@@ -47,6 +47,22 @@ export async function sendCompletedSampleData({
   return true;
 }
 
+export async function addWordToWordList({ word }) {
+  const response = await fetch("/api/tracked-tokens", {
+    method: "post",
+    headers: {
+      "Content-Type": "application/json",
+      authorization: `Bearer ${getCookie("authToken") || ""}`,
+    },
+    body: JSON.stringify({
+      tokenString: word,
+    }),
+  });
+  if (!response.ok) {
+    throw await response.json();
+  }
+  return await response.json();
+}
 
 export async function sendSettingsToBackend({
   trialDisplayMode,

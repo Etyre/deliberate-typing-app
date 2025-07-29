@@ -47,7 +47,9 @@ router.post("/api/tracked-tokens", async (req, res) => {
     });
     //   Upsert the token to the user-specific table.
     res.status(200).json({ success: true, token: addedUserTrackedToken });
+    console.log("Token upserted successfully: ", tokenString);
   } catch (error) {
+    console.error("Database error: ", error);
     return res
       .status(500)
       .json({ error: "Error upserting token into two tables in the database" });
