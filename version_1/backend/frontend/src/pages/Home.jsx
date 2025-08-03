@@ -79,7 +79,7 @@ export default function Home() {
   return (
     <div>
       <NavBar navigationFunction={setActiveView}></NavBar>
-      <div>
+      <div style={{ marginTop: "120px" }}>
         {activeView == "TYPING" && (
           <div className="textAndTypingContainer">
             <div className="score-box">

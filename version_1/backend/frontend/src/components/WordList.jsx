@@ -4,9 +4,9 @@ import { addWordToWordList, getWordList } from "../api/api";
 
 function isValidWord(word) {
   const trimmedWord = word.trim();
-  
+
   if (!trimmedWord) return false;
-  
+
   const validWordPattern = /^[\w'-]+$/;
   return validWordPattern.test(trimmedWord);
 }
@@ -40,7 +40,9 @@ export default function WordList() {
 
   const handleAddWord = async () => {
     if (!isValidWord(inputValue)) {
-      setErrorMessage("Word can only contain letters, numbers, hyphens, and apostrophes. No spaces or other punctuation.");
+      setErrorMessage(
+        "Word can only contain letters, numbers, hyphens, and apostrophes. No spaces or other punctuation."
+      );
       return;
     }
 
@@ -55,10 +57,18 @@ export default function WordList() {
     }
   };
 
-  const filteredTokens = trackedTokens.filter(token => {
+  const filteredTokens = trackedTokens.filter((token) => {
     if (filterType === "all") return true;
-    if (filterType === "manual") return token.tokenSource === "ADDED_MANUALLY" || token.tokenSource === "BOTH_MISSED_AND_ADDED_MANUALLY";
-    if (filterType === "missed") return token.tokenSource === "MISSED_IN_PRACTICE" || token.tokenSource === "BOTH_MISSED_AND_ADDED_MANUALLY";
+    if (filterType === "manual")
+      return (
+        token.tokenSource === "ADDED_MANUALLY" ||
+        token.tokenSource === "BOTH_MISSED_AND_ADDED_MANUALLY"
+      );
+    if (filterType === "missed")
+      return (
+        token.tokenSource === "MISSED_IN_PRACTICE" ||
+        token.tokenSource === "BOTH_MISSED_AND_ADDED_MANUALLY"
+      );
     return true;
   });
 
@@ -90,9 +100,9 @@ export default function WordList() {
         <h2>Your word list</h2>
         <div style={{ display: "flex", gap: "20px", marginBottom: "10px" }}>
           <label style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-            <input 
-              type="radio" 
-              name="word-list-filter" 
+            <input
+              type="radio"
+              name="word-list-filter"
               value="all"
               checked={filterType === "all"}
               onChange={(e) => setFilterType(e.target.value)}
@@ -100,9 +110,9 @@ export default function WordList() {
             All words
           </label>
           <label style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-            <input 
-              type="radio" 
-              name="word-list-filter" 
+            <input
+              type="radio"
+              name="word-list-filter"
               value="manual"
               checked={filterType === "manual"}
               onChange={(e) => setFilterType(e.target.value)}
@@ -110,9 +120,9 @@ export default function WordList() {
             Manually added only
           </label>
           <label style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-            <input 
-              type="radio" 
-              name="word-list-filter" 
+            <input
+              type="radio"
+              name="word-list-filter"
               value="missed"
               checked={filterType === "missed"}
               onChange={(e) => setFilterType(e.target.value)}
@@ -120,11 +130,17 @@ export default function WordList() {
             Missed words only
           </label>
         </div>
-        
+
         {loading ? (
           <div>Loading word list...</div>
         ) : (
-          <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "10px" }}>
+          <table
+            style={{
+              width: "100%",
+              borderCollapse: "collapse",
+              marginTop: "10px",
+            }}
+          >
             <thead>
               <tr style={{ borderBottom: "2px solid #ccc" }}>
                 <th style={{ padding: "8px", textAlign: "left" }}>Word</th>
@@ -134,7 +150,10 @@ export default function WordList() {
             </thead>
             <tbody>
               {filteredTokens.map((token) => (
-                <tr key={token.tokenId} style={{ borderBottom: "1px solid #eee" }}>
+                <tr
+                  key={token.tokenId}
+                  style={{ borderBottom: "1px solid #eee" }}
+                >
                   <td style={{ padding: "8px" }}>{token.tokenString}</td>
                   <td style={{ padding: "8px" }}>{token.status}</td>
                   <td style={{ padding: "8px" }}>
@@ -144,7 +163,14 @@ export default function WordList() {
               ))}
               {filteredTokens.length === 0 && (
                 <tr>
-                  <td colSpan="3" style={{ padding: "8px", textAlign: "center", fontStyle: "italic" }}>
+                  <td
+                    colSpan="3"
+                    style={{
+                      padding: "8px",
+                      textAlign: "center",
+                      fontStyle: "italic",
+                    }}
+                  >
                     No words found for selected filter
                   </td>
                 </tr>

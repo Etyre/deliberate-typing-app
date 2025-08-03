@@ -28,8 +28,6 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
 }
@@ -119,6 +117,12 @@ form {
 
 .nav-bar {
   display: flex;
+  position: fixed;
+  top: 40px;
+  left: 40px;
+  right: 40px;
+  z-index: 100;
+  padding: 10px 0;
   margin-bottom: 3px;
 }
 
