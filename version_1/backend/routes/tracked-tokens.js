@@ -5,6 +5,48 @@ import { getCurrentUser } from "../utils/authentication-utils.js";
 const router = express.Router();
 const prisma = new PrismaClient();
 
+router.get("/api/tracked-tokens", async (req, res) => {
+  const user = await getCurrentUser(req, res);
+  if (!user) {
+    return res
+      .status(401)
+      .json({ error: "You need to log in to view your word list!" });
+  }
+
+  try {
+    const trackedTokens = await prisma.$queryRaw`
+      SELECT
+        TT."id" as "tokenId",
+        TT."tokenString",
+        UTT."status",
+        UTT."tokenSource",
+        UTT."activationStatus",
+        COALESCE(
+          (COUNT(STT."id") - SUM(CASE WHEN STT."wasMissed" = TRUE THEN 1 ELSE 0 END))::float / NULLIF(COUNT(STT."id"), 0),
+          0
+        ) AS "accuracy"
+      FROM
+        "UserTrackedToken" AS UTT
+        INNER JOIN "TrackedToken" AS TT ON UTT."trackedTokenId" = TT."id"
+        LEFT JOIN "SampleTrackedToken" AS STT ON TT."id" = STT."trackedTokenId"
+        LEFT JOIN "Sample" AS S ON STT."sampleId" = S."id" AND S."userId" = ${user.id}
+      WHERE
+        UTT."userId" = ${user.id}
+      GROUP BY 
+        UTT."id", TT."id", TT."tokenString", UTT."status", UTT."tokenSource", UTT."activationStatus"
+      ORDER BY 
+        "accuracy" ASC, TT."tokenString" ASC
+    `;
+
+    res.status(200).json({ trackedTokens });
+  } catch (error) {
+    console.error("Database error: ", error);
+    return res
+      .status(500)
+      .json({ error: "Error fetching tracked tokens from database" });
+  }
+});
+
 router.post("/api/tracked-tokens", async (req, res) => {
   const user = await getCurrentUser(req, res);
   if (!user) {
