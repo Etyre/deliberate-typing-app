@@ -129,7 +129,12 @@ router.post("/api/sample-run", async (req, res) => {
       )
     ) {
       await prisma.userTrackedToken.update({
-        where: { trackedTokenId: trackedTokenId, userId: user.id },
+        where: { 
+          userId_trackedTokenId: {
+            userId: user.id,
+            trackedTokenId: trackedTokenId
+          }
+        },
         data: { status: "GRADUATED" },
       });
     }

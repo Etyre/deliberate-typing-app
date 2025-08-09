@@ -11,12 +11,11 @@ function isValidWord(word) {
   return validWordPattern.test(trimmedWord);
 }
 
-export default function WordList() {
+export default function WordList({ filterType, setFilterType }) {
   const { currentUser, isAnonUser } = useContext(AuthContext);
 
   const [inputValue, setInputValue] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  const [filterType, setFilterType] = useState("all");
   const [trackedTokens, setTrackedTokens] = useState([]);
   const [loading, setLoading] = useState(true);
 

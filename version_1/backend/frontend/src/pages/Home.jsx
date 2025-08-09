@@ -21,6 +21,7 @@ export default function Home() {
    * @type {[ "TYPING"| "OPTIONS_PANEL" | "STATS" | "WORD_LIST",]}
    */
   const [activeView, setActiveView] = useState("TYPING");
+  const [wordListFilterType, setWordListFilterType] = useState("all");
 
   // If the current trial is set to null, we move up the onDeck trial into the currentTrial position, and set onDeckTrial to null. (We first save the currentTrial as previousTrial.)
   // Setting the current trial to null is the way that we trigger the cascade.
@@ -103,7 +104,10 @@ export default function Home() {
         )}
         {activeView == "WORD_LIST" && (
           <div>
-            <WordList></WordList>
+            <WordList 
+              filterType={wordListFilterType}
+              setFilterType={setWordListFilterType}
+            />
           </div>
         )}
         {activeView == "OPTIONS_PANEL" && (
