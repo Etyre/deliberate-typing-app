@@ -2,26 +2,32 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-async function getMostMissedTokens(n, userId) {
+async function getMostMissedTokens(n, userId, trainingTokenSourcing) {
   const mostMissedTokens = await prisma.$queryRaw`
       SELECT
         TT."id",
         TT."tokenString",
-        SUM(CASE WHEN "wasMissed" = TRUE THEN 1 ELSE 0 END)::float / COUNT(STT."id") AS "missRatio"
+        CASE 
+          WHEN COUNT(STT."id") = 0 THEN 0
+          ELSE SUM(CASE WHEN "wasMissed" = TRUE THEN 1 ELSE 0 END)::float / COUNT(STT."id")
+        END AS "missRatio"
       FROM
         "TrackedToken" AS TT
-          INNER JOIN "SampleTrackedToken" AS STT
+          INNER JOIN "UserTrackedToken" AS UTT
+          ON(TT."id" = UTT."trackedTokenId")
+          -- Use LEFT JOIN to include tokens with no practice history
+          LEFT JOIN "SampleTrackedToken" AS STT
           ON(TT."id" = STT."trackedTokenId")
-            INNER JOIN "Sample" AS S
-            ON(STT."sampleId" = S."id")
-              INNER JOIN "User" AS U
-              ON(S."userId" = U."id")
+            LEFT JOIN "Sample" AS S
+            ON(STT."sampleId" = S."id" AND S."userId" = ${userId})
       WHERE
-        U."id" = ${userId}
+        UTT."userId" = ${userId}
+        -- Filter by tokenSource if user has MANUAL_LIST mode enabled
+        AND (${trainingTokenSourcing} != 'MANUAL_LIST' OR UTT."tokenSource" = 'ADDED_MANUALLY')
       GROUP BY
         TT."id", TT."tokenString"
       ORDER BY 
-        "missRatio" DESC
+        "missRatio" DESC, TT."tokenString" ASC
       LIMIT ${n};
     `;
   console.log("mostMissed:", mostMissedTokens);
@@ -42,13 +48,15 @@ export default async function getTrainingTokens(userId) {
   const ttsAlgoPrioritizeLapsedTokens = userData.ttsAlgoPrioritizeLapsedTokens;
   const ttsAlgoReviewGraduatedTokens = userData.ttsAlgoReviewGraduatedTokens;
 
+  const trainingTokenSourcing = userData.trainingTokenSourcing;
+
   // Select a set of training tokens based on the trainingAlgorithm.
 
   // Full algorithm:
 
   const trainingTokens = [];
 
-  // Step 1: Check if the training tokens of the previous sample are ready to graduate, and use them if not.
+  // Step 1: Check if the training tokens of the previous sample are ready to graduate, and, if not, use them.
 
   if (ttsAlgoDeliberatePractice) {
     const trainingThreshold = 5;
@@ -59,17 +67,38 @@ export default async function getTrainingTokens(userId) {
       where: { userId: userId },
       orderBy: { dateTimeEnd: "desc" },
       include: {
-        sampleTrainingTokens: { include: { trackedToken: true } },
+        sampleTrainingTokens: { 
+          include: { 
+            trackedToken: {
+              include: {
+                // Include UserTrackedToken to access tokenSource for filtering
+                UserTrackedToken: true
+              }
+            }
+          } 
+        },
         sampleTrackedTokens: true,
       },
     });
 
     if (previousSample) {
+      // if (trainingTokenSourcing === "MANUAL_LIST" && previousSample.trainingTokenSourcing === "ALL_TRACKED_TOKENS") { 
+    
+      // }else{
+        
       const previousTrainingTokens = previousSample.sampleTrainingTokens;
 
       // For each one, check if it has been typed correctly 5 times consecutively, over the past 5 samples that is has been a training token of.
 
       for (const TrainingToken of previousTrainingTokens) {
+        // Filter by tokenSource if user has MANUAL_LIST mode enabled
+        if (trainingTokenSourcing === "MANUAL_LIST") {
+          const userTrackedToken = TrainingToken.trackedToken.UserTrackedToken.find(utt => utt.userId === userId);
+          if (!userTrackedToken || userTrackedToken.tokenSource !== "ADDED_MANUALLY") {
+            continue; // Skip tokens that weren't manually added
+          }
+        }
+        
         const tokenId = TrainingToken.trackedToken.id;
         // Note: The id of this token on the TrackedToken table, is NOT the same as the id of this token on the training token table, or the sampleTrackedToken table. Here, we want the id on the trackedToken table.
         const recentInstances = await prisma.sampleTrackedToken.findMany({
@@ -113,6 +142,8 @@ export default async function getTrainingTokens(userId) {
       WHERE
         U."id" = ${userId} AND
         UTT."status" = 'LAPSED'
+        -- Filter by tokenSource if user has MANUAL_LIST mode enabled
+        AND (${trainingTokenSourcing} != 'MANUAL_LIST' OR UTT."tokenSource" = 'ADDED_MANUALLY')
       GROUP BY
         TT."id", TT."tokenString"
       ORDER BY 
@@ -147,7 +178,9 @@ export default async function getTrainingTokens(userId) {
           INNER JOIN "UserTrackedToken" "utt" ON ("utt"."trackedTokenId" = "stt"."trackedTokenId")
           WHERE 
             "s"."userId" = ${userId} AND
-          "utt"."status" = 'GRADUATED' 
+            "utt"."status" = 'GRADUATED'
+            -- Filter by tokenSource if user has MANUAL_LIST mode enabled
+            AND (${trainingTokenSourcing} != 'MANUAL_LIST' OR "utt"."tokenSource" = 'ADDED_MANUALLY')
         ),
         "ConsecutiveHits" AS (
           SELECT 
@@ -182,7 +215,8 @@ export default async function getTrainingTokens(userId) {
   // Step 4: The fallback step: fill the remaining slots with the most missed tokens.
   if (trainingTokens.length < batchSize) {
     const slotsLeft = batchSize - trainingTokens.length;
-    const tokens = await getMostMissedTokens(slotsLeft, userId);
+    // Pass trainingTokenSourcing to filter tokens by source if needed
+    const tokens = await getMostMissedTokens(slotsLeft, userId, trainingTokenSourcing);
     trainingTokens.push(...tokens);
   }
 
