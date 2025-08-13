@@ -105,7 +105,7 @@ model TrackedToken {
 
   sampleTrackedTokens  SampleTrackedToken[]
   sampleTrainingTokens SampleTrainingToken[]
-  UserTrackedToken     UserTrackedToken[]
+  userTrackedToken     UserTrackedToken[]
 }
 
 enum TrackedTokenSource {
