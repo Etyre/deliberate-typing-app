@@ -234,6 +234,7 @@ export default async function getTrainingTokens(userId) {
   }
   // VERSION 2: MANUAL LIST
   else if (trainingTokenSourcing === "MANUAL_LIST") {
+
     // Step 1: Check if the training tokens of the previous sample are ready to graduate, and use them if not.
     if (ttsAlgoDeliberatePractice) {
       // Grab the tokens from the previous sample.
@@ -292,9 +293,49 @@ export default async function getTrainingTokens(userId) {
       }
     }
 
-    // Step 2:
+    // Step 2: Check if there are any lapsed tokens that are manually added. If so, take the worst-scoring lapsed token first, and add it to the training tokens array
 
-    // Step 3:
+    if (ttsAlgoPrioritizeLapsedTokens) {
+      const numberOfLapsedTokens = 1;
+      if (trainingTokens.length < batchSize) {
+        // Note that the way we're doing the array destructuring here, we're only grabbing the first element of the array, even if numberOfLapsedTokens is greater than 1.
+        const [worstLapsedToken] = await prisma.$queryRaw`
+            SELECT
+        TT."id",
+        TT."tokenString",
+        SUM(CASE WHEN "wasMissed" = TRUE THEN 1 ELSE 0 END)::float / COUNT(STT."id") AS "missRatio"
+      FROM
+        "TrackedToken" AS TT
+          INNER JOIN "SampleTrackedToken" AS STT
+          ON(TT."id" = STT."trackedTokenId")
+            INNER JOIN "Sample" AS S
+            ON(STT."sampleId" = S."id")
+              INNER JOIN "User" AS U
+              ON(S."userId" = U."id")
+          INNER JOIN "UserTrackedToken" AS UTT
+          ON(TT."id" = UTT."trackedTokenId")
+      WHERE
+        U."id" = ${userId} AND
+        UTT."status" = 'LAPSED' AND
+        (UTT."tokenSource" = 'ADDED_MANUALLY' OR UTT."tokenSource" = 'MISSED_AND_THEN_ADDED_MANUALLY')
+      GROUP BY
+        TT."id", TT."tokenString"
+      ORDER BY 
+        "missRatio" DESC
+      LIMIT ${numberOfLapsedTokens};
+            `;
+        if (worstLapsedToken) {
+          trainingTokens.push(worstLapsedToken);
+        }
+      }
+    }
+
+
+    // Step 3: Take half of the remaining slots (on average) and fill them with graduated manually added tokens to review in proportion to how many times they've been typed correctly since they graduated.
+    
+
+
+
 
     // Step 4: The fallback step: fill the remaining slots with randomly selected manually added tokens that haven't been used as training tokens yet.
     if (trainingTokens.length < batchSize) {
