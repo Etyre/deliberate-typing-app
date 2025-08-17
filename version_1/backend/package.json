@@ -13,7 +13,8 @@
     "grant-seed-permissions": "chown prisma ./prisma/seed.js",
     "generate": "npx prisma generate",
     "preinstall": "cd frontend && npm install",
-    "build": "npx prisma generate && cd frontend && npm run build"
+    "build": "npx prisma generate && cd frontend && npm run build",
+    "test": "vitest"
   },
   "author": "",
   "license": "ISC",
@@ -27,6 +28,7 @@
     "openai": "^4.28.4"
   },
   "devDependencies": {
-    "prisma": "^6.12.0"
+    "prisma": "^6.12.0",
+    "vitest": "^3.2.4"
   }
 }

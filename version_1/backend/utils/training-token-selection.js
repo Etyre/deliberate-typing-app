@@ -28,7 +28,31 @@ async function getMostMissedTokens(n, userId) {
   return mostMissedTokens;
 }
 
-async function getNewManuallyAddedTokens(n, userId) {
+// This function should get a random selection of n manually added tokens that have never been used as training tokens in any sample.
+
+
+//old version:
+// async function getNewManuallyAddedTokens(n, userId) {
+//   const newManualTokens = await prisma.$queryRaw`
+//     SELECT
+//       TT."id",
+//       TT."tokenString"
+//     FROM
+//       "TrackedToken" AS TT
+//         INNER JOIN "UserTrackedToken" AS UTT
+//         ON(TT."id" = UTT."trackedTokenId")
+//     WHERE
+//       UTT."userId" = ${userId} AND
+//       UTT."status" = 'PENDING' AND
+//       (UTT."tokenSource" = 'ADDED_MANUALLY' OR UTT."tokenSource" = 'MISSED_AND_THEN_ADDED_MANUALLY')
+//     ORDER BY RANDOM()
+//     LIMIT ${n};
+//   `;
+//   return newManualTokens;
+// }
+
+// Claude's attempt:
+export async function getNewManuallyAddedTokens(n, userId) {
   const newManualTokens = await prisma.$queryRaw`
     SELECT
       TT."id",
@@ -39,8 +63,12 @@ async function getNewManuallyAddedTokens(n, userId) {
         ON(TT."id" = UTT."trackedTokenId")
     WHERE
       UTT."userId" = ${userId} AND
-      UTT."status" = 'PENDING' AND
-      (UTT."tokenSource" = 'ADDED_MANUALLY' OR UTT."tokenSource" = 'MISSED_AND_THEN_ADDED_MANUALLY')
+      (UTT."tokenSource" = 'ADDED_MANUALLY' OR UTT."tokenSource" = 'MISSED_AND_THEN_ADDED_MANUALLY') AND
+      NOT EXISTS (
+        SELECT 1 FROM "SampleTrainingToken" STT
+        INNER JOIN "Sample" S ON STT."sampleId" = S."id"
+        WHERE STT."trackedTokenId" = TT."id" AND S."userId" = ${userId}
+      )
     ORDER BY RANDOM()
     LIMIT ${n};
   `;
@@ -99,6 +127,8 @@ export default async function getTrainingTokens(userId) {
           sampleTrackedTokens: true,
         },
       });
+
+      
 
       if (previousSample) {
         const previousTrainingTokens = previousSample.sampleTrainingTokens;
@@ -257,6 +287,19 @@ export default async function getTrainingTokens(userId) {
         },
       });
 
+      // As a cluge, additionally grab any manually added tokens that are currently marked as "TRAINING".
+      // Without this, we have a problem where sometimes we'll mark a token as "training" when the trial is sent, but we don't actually get a sample back, and so that token is left in limbo: It's in the training state, but it's not being served as a training token.
+
+      // const markedAsTrainingInDB = await prisma.userTrackedToken.findMany({
+      //   where: {
+      //     userId: userId,
+      //     status: "TRAINING",
+      //     tokenSource: "ADDED_MANUALLY",
+      //   },
+      // });
+
+  
+
       if (previousSample) {
         const previousTrainingTokens = previousSample.sampleTrainingTokens;
 
@@ -332,7 +375,7 @@ export default async function getTrainingTokens(userId) {
 
 
     // Step 3: Take half of the remaining slots (on average) and fill them with graduated manually added tokens to review in proportion to how many times they've been typed correctly since they graduated.
-    
+
 
 
 
