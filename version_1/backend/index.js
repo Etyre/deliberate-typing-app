@@ -171,6 +171,7 @@ The paragraph should include the following words. Use each of these words at lea
   const userSettings = new UserSettingsDto(rawCurrentUser);
 
   console.log(ourPrompt);
+  console.log("trainingTokens that we're about to send: ", trainingTokens);
   res.send({
     targetText: sample,
     trainingTokens: trainingTokens,

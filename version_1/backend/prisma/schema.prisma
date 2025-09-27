@@ -35,6 +35,8 @@ model User {
   tokenHighlighting          TokenHighlighting @default(CURRENT_TRAINING_TOKENS)
   tokenHighlightingThreshold Int?
 
+  trainingThreshold Int @default(5)
+
   // Link to all the user's sample-runs
   samples          Sample[]
   UserTrackedToken UserTrackedToken[]

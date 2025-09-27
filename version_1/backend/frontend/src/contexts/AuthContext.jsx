@@ -46,6 +46,7 @@ export const AuthContextProvider = ({ children }) => {
             trainingAlgorithm: currentUser.trainingAlgorithm,
             tokenHighlighting: currentUser.tokenHighlighting,
             tokenHighlightingThreshold: currentUser.tokenHighlightingThreshold,
+            trainingThreshold: currentUser.trainingThreshold,
           }
         : null,
     [currentUser]

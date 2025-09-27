@@ -108,10 +108,9 @@ router.post("/api/sample-run", async (req, res) => {
     });
   }
 
-  const trainingThreshold = 5;
-  // Note we probably want to store this as a variable somewhere (maybe as a user setting?) since it is also used in the training token selection code.
+  // Graduate training tokens: Check if any of the TRAINING tokens have been typed correctly [trainingThreshold] times in a row, and if so, modify their status to GRADUATED in the TrackedToken table.
 
-  // Graduate training tokens: Check if any of the TRAINING tokens have been typed correctly 5 times in a row, and if so, modify their status to GRADUATED in the TrackedToken table.
+
 
   for (const trainingToken of trainingTokens) {
     const trackedTokenId = trainingToken.id;
@@ -120,7 +119,7 @@ router.post("/api/sample-run", async (req, res) => {
       where: { trackedTokenId: trackedTokenId },
       orderBy: { sample: { dateTimeEnd: "desc" } },
       include: { trackedToken: true, sample: true },
-      take: trainingThreshold,
+      take: userSettings.trainingThreshold,
     });
 
     if (

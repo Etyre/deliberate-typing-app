@@ -1,5 +1,4 @@
 import { useEffect, useState, useRef, useMemo, useContext } from "react";
-import { sendSettingsToBackend } from "../api/api";
 import { AuthContext } from "../contexts/AuthContext";
 
 /**
@@ -193,6 +192,32 @@ export default function OptionsPanel() {
           </label>
         </div>
       </div>
+      <div>
+        <h3>Graduation threshold</h3>
+        <p>
+          For how many trials do you need to correctly type a word before it is
+          considered graduated?
+        </p>
+
+        <div>
+          <label>
+            threshold ={" "}
+            <input
+              type="number"
+              min="1"
+              max="10"
+              value={formSettings.trainingThreshold}
+              onChange={(e) => {
+                const newValue = Number(e.target.value);
+                setFormSettings((formSettings) => ({
+                  ...formSettings,
+                  trainingThreshold: newValue,
+                }));
+              }}
+            />
+          </label>
+        </div>
+      </div>
       {/*  */}
       <div>
         <h3>Training token sourcing [not yet functional]</h3>
@@ -215,11 +240,9 @@ export default function OptionsPanel() {
             />
             Manual import (exclusively words that are listed below)
           </label>
-          <div>
-
-          </div>
+          <div></div>
         </div>
-        
+
         <div>
           <label>
             <input
@@ -240,7 +263,6 @@ export default function OptionsPanel() {
             All history (words that you've missed in the past, from any source)
           </label>
         </div>
-       
       </div>
 
       {/*  */}

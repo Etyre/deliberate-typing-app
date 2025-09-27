@@ -20,6 +20,7 @@ router.put("/api/settings", async (req, res) => {
   const ttsAlgoReviewGraduatedTokens = req.body.ttsAlgoReviewGraduatedTokens;
   const tokenHighlighting = req.body.tokenHighlighting;
   const tokenHighlightingThreshold = req.body.tokenHighlightingThreshold;
+  const trainingThreshold = req.body.trainingThreshold;
 
   const updatedUserData = await prisma.user.update({
     where: { id: rawUser.id },
@@ -33,6 +34,7 @@ router.put("/api/settings", async (req, res) => {
       ttsAlgoReviewGraduatedTokens: ttsAlgoReviewGraduatedTokens,
       tokenHighlighting: tokenHighlighting,
       tokenHighlightingThreshold: tokenHighlightingThreshold,
+      trainingThreshold: trainingThreshold,
     },
   });
 

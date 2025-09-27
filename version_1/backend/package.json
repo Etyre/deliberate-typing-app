@@ -8,13 +8,14 @@
     "start": "npx wait-on tcp:real-next-database.railway.internal:5432 && npx prisma migrate deploy && bash ./scripts/generate-private-key.sh && node index.js",
     "dev": "node --watch index.js",
     "migrate": "npx prisma migrate dev",
+    "migrate-test": "dotenv -e .env.test -- npx prisma migrate dev",
     "clearTable": " ",
     "seed": "npx prisma migrate reset && node ./prisma/seed.js",
     "grant-seed-permissions": "chown prisma ./prisma/seed.js",
     "generate": "npx prisma generate",
     "preinstall": "cd frontend && npm install",
     "build": "npx prisma generate && cd frontend && npm run build",
-    "test": "vitest"
+    "test": "dotenv -e .env.test -- vitest"
   },
   "author": "",
   "license": "ISC",
@@ -28,6 +29,7 @@
     "openai": "^4.28.4"
   },
   "devDependencies": {
+    "dotenv-cli": "^10.0.0",
     "prisma": "^6.12.0",
     "vitest": "^3.2.4"
   }

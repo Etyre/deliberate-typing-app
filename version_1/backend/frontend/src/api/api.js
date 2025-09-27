@@ -87,6 +87,7 @@ export async function sendSettingsToBackend({
   ttsAlgoReviewGraduatedTokens,
   tokenHighlighting,
   tokenHighlightingThreshold,
+  trainingThreshold,
 }) {
   const response = await fetch("/api/settings", {
     method: "put",
@@ -104,6 +105,7 @@ export async function sendSettingsToBackend({
       ttsAlgoReviewGraduatedTokens: ttsAlgoReviewGraduatedTokens,
       tokenHighlighting: tokenHighlighting,
       tokenHighlightingThreshold: tokenHighlightingThreshold,
+      trainingThreshold: trainingThreshold,
     }),
   });
   return await response.json();

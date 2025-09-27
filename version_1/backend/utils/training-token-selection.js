@@ -30,7 +30,6 @@ async function getMostMissedTokens(n, userId) {
 
 // This function should get a random selection of n manually added tokens that have never been used as training tokens in any sample.
 
-
 //old version:
 // async function getNewManuallyAddedTokens(n, userId) {
 //   const newManualTokens = await prisma.$queryRaw`
@@ -103,7 +102,7 @@ export default async function getTrainingTokens(userId) {
   const ttsAlgoPrioritizeLapsedTokens = userData.ttsAlgoPrioritizeLapsedTokens;
   const ttsAlgoReviewGraduatedTokens = userData.ttsAlgoReviewGraduatedTokens;
 
-  const trainingThreshold = 5;
+  const trainingThreshold = userData.trainingThreshold;
   // This is the number of times that a token must be typed correctly in a row, in order to graduate.
 
   // Select a set of training tokens based on the trainingAlgorithm.
@@ -127,8 +126,6 @@ export default async function getTrainingTokens(userId) {
           sampleTrackedTokens: true,
         },
       });
-
-      
 
       if (previousSample) {
         const previousTrainingTokens = previousSample.sampleTrainingTokens;
@@ -226,7 +223,7 @@ export default async function getTrainingTokens(userId) {
             "trackedTokenId"
         )
         SELECT 
-          "tt"."id" AS "tracked_token_id",
+          "tt"."id" AS "id",
           "tt"."tokenString",
           COALESCE("ch"."consecutive_hits", 0) AS "consecutive_hits",
           POWER(0.7, "ch"."consecutive_hits")  AS "ReviewProbability"
@@ -264,7 +261,6 @@ export default async function getTrainingTokens(userId) {
   }
   // VERSION 2: MANUAL LIST
   else if (trainingTokenSourcing === "MANUAL_LIST") {
-
     // Step 1: Check if the training tokens of the previous sample are ready to graduate, and use them if not.
     if (ttsAlgoDeliberatePractice) {
       // Grab the tokens from the previous sample.
@@ -286,19 +282,6 @@ export default async function getTrainingTokens(userId) {
           sampleTrackedTokens: true,
         },
       });
-
-      // As a cluge, additionally grab any manually added tokens that are currently marked as "TRAINING".
-      // Without this, we have a problem where sometimes we'll mark a token as "training" when the trial is sent, but we don't actually get a sample back, and so that token is left in limbo: It's in the training state, but it's not being served as a training token.
-
-      // const markedAsTrainingInDB = await prisma.userTrackedToken.findMany({
-      //   where: {
-      //     userId: userId,
-      //     status: "TRAINING",
-      //     tokenSource: "ADDED_MANUALLY",
-      //   },
-      // });
-
-  
 
       if (previousSample) {
         const previousTrainingTokens = previousSample.sampleTrainingTokens;
@@ -373,12 +356,64 @@ export default async function getTrainingTokens(userId) {
       }
     }
 
-
     // Step 3: Take half of the remaining slots (on average) and fill them with graduated manually added tokens to review in proportion to how many times they've been typed correctly since they graduated.
 
+    // Claude wrote this. It seems to cause a crash.
+    // Edit: It now doesn't seem to be causing a crash. It just doesn't seem to be working.
 
+    if (ttsAlgoReviewGraduatedTokens) {
+      const slotsLeft = batchSize - trainingTokens.length;
+      if (slotsLeft > 0) {
+        const numberOfReviewTokens = Math.floor(Math.random() * slotsLeft);
+        const reviewTokenProbabilityThreshold = Math.random();
+        const reviewTokens = await prisma.$queryRaw`
 
+        WITH "RankedSamples" AS (
+          SELECT 
+            "stt"."trackedTokenId",
+            "stt"."wasMissed",
+            "s"."userId",
+            "s"."dateTimeEnd",
+            ROW_NUMBER() OVER (PARTITION BY "stt"."trackedTokenId" ORDER BY "s"."dateTimeEnd" DESC) AS "rn",
+            SUM(CASE WHEN "stt"."wasMissed" THEN 1 ELSE 0 END) OVER (PARTITION BY "stt"."trackedTokenId" ORDER BY "s"."dateTimeEnd" DESC) AS "misses"
+          FROM 
+            "SampleTrackedToken" "stt"
+            JOIN "Sample" "s" ON ("stt"."sampleId" = "s"."id")
+          INNER JOIN "UserTrackedToken" "utt" ON ("utt"."trackedTokenId" = "stt"."trackedTokenId")
+          WHERE 
+            "s"."userId" = ${userId} AND
+            "utt"."status" = 'GRADUATED' AND
+            ("utt"."tokenSource" = 'ADDED_MANUALLY' OR "utt"."tokenSource" = 'MISSED_AND_THEN_ADDED_MANUALLY')
+        ),
+        "ConsecutiveHits" AS (
+          SELECT 
+            "trackedTokenId",
+            SUM(CASE WHEN "wasMissed" = false AND ("misses" = 0 OR "rn" < (SELECT MIN("rn") FROM "RankedSamples" "r2" WHERE "r2"."trackedTokenId" = "RankedSamples"."trackedTokenId" AND "r2"."wasMissed" = true)) THEN 1 ELSE 0 END) AS "consecutive_hits"
+          FROM 
+            "RankedSamples"
+          GROUP BY 
+            "trackedTokenId"
+        )
+        SELECT 
+          "tt"."id" AS "id",
+          "tt"."tokenString",
+          COALESCE("ch"."consecutive_hits", 0) AS "consecutive_hits",
+          POWER(0.7, "ch"."consecutive_hits")  AS "ReviewProbability"
+        FROM 
+          "TrackedToken" "tt"
+          LEFT JOIN "ConsecutiveHits" "ch" ON "tt"."id" = "ch"."trackedTokenId"
+        WHERE
+          POWER(0.7, "ch"."consecutive_hits" * 0.6) > ${reviewTokenProbabilityThreshold}
+        ORDER BY 
+          "consecutive_hits" DESC, "tt"."tokenString" 
 
+        LIMIT ${numberOfReviewTokens} ;
+    `;
+        // Note: There's some question of whether these decay curves have the right parameters, both the exponent multiple and the base. I basically picked they by eyeballing. There's probably cog sci research on the correct forgetting curves to use.
+
+        trainingTokens.push(...reviewTokens);
+      }
+    }
 
     // Step 4: The fallback step: fill the remaining slots with randomly selected manually added tokens that haven't been used as training tokens yet.
     if (trainingTokens.length < batchSize) {
@@ -388,10 +423,6 @@ export default async function getTrainingTokens(userId) {
     }
 
     console.log("trainingTokens: ", trainingTokens);
-    console.log(
-      "trainingTokens.userTrackedToken: ",
-      trainingTokens.userTrackedToken
-    );
 
     // Set the status of the training tokens to "training".
     for (const token of trainingTokens) {

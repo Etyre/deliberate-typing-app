@@ -12,6 +12,7 @@ export default class UserDto {
   ttsAlgoReviewGraduatedTokens;
   tokenHighlighting;
   tokenHighlightingThreshold;
+  trainingThreshold;
 
   constructor(data) {
     for (const key in this) {
