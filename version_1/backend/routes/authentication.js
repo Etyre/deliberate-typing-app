@@ -97,7 +97,10 @@ router.post("/api/signup", async (req, res) => {
 });
 
 router.post("/api/login", async (req, res) => {
+  console.log("=== LOGIN REQUEST RECEIVED ===");
+  console.log("Request body:", req.body);
   const loginData = req.body.loginData;
+  console.log("Login data:", loginData);
 
   let errors = [];
   //   check 1: is the given email already in the database?

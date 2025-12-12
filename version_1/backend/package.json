@@ -26,7 +26,8 @@
     "express": "^5.0.0-beta.3",
     "jsonwebtoken": "^9.0.2",
     "normalize-text": "^2.5.0",
-    "openai": "^4.28.4"
+    "openai": "^4.28.4",
+    "seedrandom": "^3.0.5"
   },
   "devDependencies": {
     "dotenv-cli": "^10.0.0",

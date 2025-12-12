@@ -1,4 +1,5 @@
 import { PrismaClient, TrainingTokenSourcing } from "@prisma/client";
+import seedRandom from "seedrandom";
 
 const prisma = new PrismaClient();
 
@@ -72,6 +73,69 @@ export async function getNewManuallyAddedTokens(n, userId) {
     LIMIT ${n};
   `;
   return newManualTokens;
+}
+
+export function setRandomSeed(seed) {
+  seedRandom(seed, { global: true });
+}
+
+// Claude Opus 4.5 added `userId` parameter on 2025-12-11.
+// Previously: reviewGraduatedTokens(numberOfReviewTokens, reviewTokenProbabilityThreshold, tokenSourceFilter)
+// The function referenced `userId` but it was never passed in, causing "ReferenceError: userId is not defined"
+export async function reviewGraduatedTokens(
+  numberOfReviewTokens,
+  reviewTokenProbabilityThreshold,
+  tokenSourceFilter,
+  userId
+) {
+  // Note: tokenSourceFilter is for allowing us to have one function that can be used for both added manually and missed and then added manually tokens, but this functionality has not been implemented yet. This version only works with added manually tokens.
+
+  const reviewTokens = await prisma.$queryRaw`
+
+      WITH "RankedSamples" AS (
+        SELECT 
+          "stt"."trackedTokenId",
+          "stt"."wasMissed",
+          "s"."userId",
+          "s"."dateTimeEnd",
+          ROW_NUMBER() OVER (PARTITION BY "stt"."trackedTokenId" ORDER BY "s"."dateTimeEnd" DESC) AS "rn",
+          SUM(CASE WHEN "stt"."wasMissed" THEN 1 ELSE 0 END) OVER (PARTITION BY "stt"."trackedTokenId" ORDER BY "s"."dateTimeEnd" DESC) AS "misses"
+        FROM 
+          "SampleTrackedToken" "stt"
+          JOIN "Sample" "s" ON ("stt"."sampleId" = "s"."id")
+        INNER JOIN "UserTrackedToken" "utt" ON ("utt"."trackedTokenId" = "stt"."trackedTokenId")
+        WHERE 
+          "s"."userId" = ${userId} AND
+          "utt"."status" = 'GRADUATED' AND
+          ("utt"."tokenSource" = 'ADDED_MANUALLY' OR "utt"."tokenSource" = 'MISSED_AND_THEN_ADDED_MANUALLY')
+      ),
+      "ConsecutiveHits" AS (
+        SELECT 
+          "trackedTokenId",
+          SUM(CASE WHEN "wasMissed" = false AND ("misses" = 0 OR "rn" < (SELECT MIN("rn") FROM "RankedSamples" "r2" WHERE "r2"."trackedTokenId" = "RankedSamples"."trackedTokenId" AND "r2"."wasMissed" = true)) THEN 1 ELSE 0 END) AS "consecutive_hits"
+        FROM 
+          "RankedSamples"
+        GROUP BY 
+          "trackedTokenId"
+      )
+      SELECT 
+        "tt"."id" AS "id",
+        "tt"."tokenString",
+        COALESCE("ch"."consecutive_hits", 0) AS "consecutive_hits",
+        POWER(0.7, "ch"."consecutive_hits")  AS "ReviewProbability"
+      FROM 
+        "TrackedToken" "tt"
+        LEFT JOIN "ConsecutiveHits" "ch" ON "tt"."id" = "ch"."trackedTokenId"
+      WHERE
+        POWER(0.7, "ch"."consecutive_hits" * 0.6) > ${reviewTokenProbabilityThreshold}
+      ORDER BY 
+        "consecutive_hits" DESC, "tt"."tokenString" 
+
+      LIMIT ${numberOfReviewTokens} ;
+  `;
+  // Note: There's some question of whether these decay curves have the right parameters, both the exponent multiple and the base. I basically picked they by eyeballing. There's probably cog sci research on the correct forgetting curves to use.
+
+  return reviewTokens;
 }
 
 async function setStatusToTraining(userId, trackedTokenId) {
@@ -366,51 +430,13 @@ export default async function getTrainingTokens(userId) {
       if (slotsLeft > 0) {
         const numberOfReviewTokens = Math.floor(Math.random() * slotsLeft);
         const reviewTokenProbabilityThreshold = Math.random();
-        const reviewTokens = await prisma.$queryRaw`
-
-        WITH "RankedSamples" AS (
-          SELECT 
-            "stt"."trackedTokenId",
-            "stt"."wasMissed",
-            "s"."userId",
-            "s"."dateTimeEnd",
-            ROW_NUMBER() OVER (PARTITION BY "stt"."trackedTokenId" ORDER BY "s"."dateTimeEnd" DESC) AS "rn",
-            SUM(CASE WHEN "stt"."wasMissed" THEN 1 ELSE 0 END) OVER (PARTITION BY "stt"."trackedTokenId" ORDER BY "s"."dateTimeEnd" DESC) AS "misses"
-          FROM 
-            "SampleTrackedToken" "stt"
-            JOIN "Sample" "s" ON ("stt"."sampleId" = "s"."id")
-          INNER JOIN "UserTrackedToken" "utt" ON ("utt"."trackedTokenId" = "stt"."trackedTokenId")
-          WHERE 
-            "s"."userId" = ${userId} AND
-            "utt"."status" = 'GRADUATED' AND
-            ("utt"."tokenSource" = 'ADDED_MANUALLY' OR "utt"."tokenSource" = 'MISSED_AND_THEN_ADDED_MANUALLY')
-        ),
-        "ConsecutiveHits" AS (
-          SELECT 
-            "trackedTokenId",
-            SUM(CASE WHEN "wasMissed" = false AND ("misses" = 0 OR "rn" < (SELECT MIN("rn") FROM "RankedSamples" "r2" WHERE "r2"."trackedTokenId" = "RankedSamples"."trackedTokenId" AND "r2"."wasMissed" = true)) THEN 1 ELSE 0 END) AS "consecutive_hits"
-          FROM 
-            "RankedSamples"
-          GROUP BY 
-            "trackedTokenId"
-        )
-        SELECT 
-          "tt"."id" AS "id",
-          "tt"."tokenString",
-          COALESCE("ch"."consecutive_hits", 0) AS "consecutive_hits",
-          POWER(0.7, "ch"."consecutive_hits")  AS "ReviewProbability"
-        FROM 
-          "TrackedToken" "tt"
-          LEFT JOIN "ConsecutiveHits" "ch" ON "tt"."id" = "ch"."trackedTokenId"
-        WHERE
-          POWER(0.7, "ch"."consecutive_hits" * 0.6) > ${reviewTokenProbabilityThreshold}
-        ORDER BY 
-          "consecutive_hits" DESC, "tt"."tokenString" 
-
-        LIMIT ${numberOfReviewTokens} ;
-    `;
-        // Note: There's some question of whether these decay curves have the right parameters, both the exponent multiple and the base. I basically picked they by eyeballing. There's probably cog sci research on the correct forgetting curves to use.
-
+        // Claude Opus 4.5 added `userId` argument on 2025-12-11. Previously only passed 2 args.
+        const reviewTokens = await reviewGraduatedTokens(
+          numberOfReviewTokens,
+          reviewTokenProbabilityThreshold,
+          null,
+          userId
+        );
         trainingTokens.push(...reviewTokens);
       }
     }
